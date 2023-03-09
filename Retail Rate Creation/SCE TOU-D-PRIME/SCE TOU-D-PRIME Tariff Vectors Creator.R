@@ -44,10 +44,10 @@ Code_WD <- getwd()
 Clean_Rate_Data_WD <- file.path(Code_WD, Data_Year)
 
 
-#### Load  & Clean Load Interval Data from Excel File ####
+#### Create Dataframe with Timestamps ####
 
-Start_Date_Time <- as.POSIXct(paste0(Data_Year, "-01-01 00:00:00"), tz = "Etc/GMT+8")
-End_Date_Time <- as.POSIXct(paste0(Data_Year, "-12-31 23:55:00"), tz = "Etc/GMT+8")
+Start_Date_Time <- as.POSIXct(paste0(Data_Year, "-01-01 00:00:00"), tz = "America/Los_Angeles")
+End_Date_Time <- as.POSIXct(paste0(Data_Year, "-12-31 23:55:00"), tz = "America/Los_Angeles")
 
 SCE_TOU_D_PRIME_Cost_Vectors <- data.frame(Date_Time = seq.POSIXt(Start_Date_Time, 
                                                                   End_Date_Time, 
