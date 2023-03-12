@@ -19,7 +19,7 @@ shinyServer(function(input, output, session) {
   
   #### Create User Input Dropdowns ####
   output$Customer_Segment_List <- renderUI({
-    Customer_Segment_List <- c("Non-Residential", "Residential General Market", "Residential Low-Income")
+    Customer_Segment_List <- c("Residential General Market", "Residential Low-Income", "Non-Residential")
     selectizeInput("Customer_Segment_Choose", "Customer Segment:", Customer_Segment_List)
   })
   
