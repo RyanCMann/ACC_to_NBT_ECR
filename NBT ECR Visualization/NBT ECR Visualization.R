@@ -56,7 +56,7 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
     NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
                            "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/",
                            "SDG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")
-    Winter_Months <- c("Jan", "Feb", "May", "Oct", "Nov", "Dec")
+    Winter_Months <- c("Jan", "Feb", "May", "Nov", "Dec")
     Spring_Months <- c("Mar", "Apr")
     Summer_Months <- c("Jun", "Jul", "Aug", "Sep", "Oct")
   }
