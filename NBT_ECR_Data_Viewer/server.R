@@ -6,6 +6,7 @@ library(tidyverse)
 library(lubridate)
 library(scales)
 library(shiny)
+library(plotly)
 
 # Disable Scientific Notation.
 options(scipen = 999)
@@ -34,7 +35,7 @@ shinyServer(function(input, output, session) {
   }) 
   
   output$Day_Type_List <- renderUI({
-    Day_Type_List <- c("Weekday", "Weekend & Holiday")
+    Day_Type_List <- c("Weekday", "Weekend/Holiday")
     selectizeInput("Day_Type_Choose", "Day Type:", Day_Type_List)
   }) 
   
@@ -139,7 +140,7 @@ shinyServer(function(input, output, session) {
       mutate(Rate_Season = ifelse(Month %in% Summer_Months(), "Summer",
                                   ifelse(Month %in% Winter_Months(), "Winter",
                                          "Spring"))) %>%
-      mutate(DayType = ifelse(DayTypeStart == 6 & DayTypeEnd == 8, "Weekend & Holiday", "Weekday")) %>%
+      mutate(DayType = ifelse(DayTypeStart == 6 & DayTypeEnd == 8, "Weekend/Holiday", "Weekday")) %>%
       mutate(ACC_Year = year(DateStart)) %>%
       mutate(Hour_Beginning = as.numeric(str_sub(TimeStart, 1, 2)))
     
@@ -323,11 +324,26 @@ shinyServer(function(input, output, session) {
   
   
   #### Create ECR Plot ####
-  output$ECR_Plot <- renderPlot({
+  output$ECR_Plot <- renderPlotly({
     
-    ECR_Plot_Object <- ggplot(Plot_Ready_Rates()) +
+    Plot_Title <- paste(input$Customer_Segment_Choose,
+                        input$Utility_Name_Choose,
+                        input$Rate_Season_Choose,
+                        input$Day_Type_Choose,
+                        input$ACC_Year_Choose,
+                        "ECR Comparison")
+    
+    Plot_Title <- gsub("Residential", "Resi", Plot_Title)
+    Plot_Title <- gsub("General Market", "GM", Plot_Title)
+    Plot_Title <- gsub("Low-Income", "LI", Plot_Title)
+    
+    ECR_Plot_Object <- ggplot(Plot_Ready_Rates(),
+                              aes(group = 1,
+                                  text = paste("Hour Beginning: ", paste0(Hour_Beginning, ":00"),
+                                               "<br>Rate: $", paste0(Rate, "/kWh"),
+                                               "<br>Legend: ", Month))) +
       geom_step(aes(x = Hour_Beginning, y = Rate,
-                    color = Month),
+                    color = Month), 
                 linewidth = 1, linetype = "solid") +
       scale_x_continuous(breaks = seq(0, 24, 2),
                          labels = paste0(seq(0, 24, 2), ":00"),
@@ -335,12 +351,7 @@ shinyServer(function(input, output, session) {
       scale_y_continuous(breaks = seq(0, Y_Axis_Upper_Limit(), Y_Axis_Breaks()),
                          limits = c(0, Y_Axis_Upper_Limit()),
                          labels = scales::dollar_format()) +
-      labs(title = paste(input$Customer_Segment_Choose,
-                         input$Utility_Name_Choose,
-                         input$Rate_Season_Choose,
-                         input$Day_Type_Choose,
-                         input$ACC_Year_Choose,
-                         "Export Compensation Rate Comparison"),
+      labs(title = Plot_Title,
            x = "Hour Beginning",
            y = "Rate ($/kWh)", color = "Legend") +
       theme(text = element_text(size = 15), plot.title = element_text(hjust = 0.5)) +
@@ -358,6 +369,9 @@ shinyServer(function(input, output, session) {
     
     ECR_Plot_Object <- ECR_Plot_Object +
       scale_color_manual(values = Manual_Plot_Colors)
+    
+    ECR_Plot_Object <- ggplotly(ECR_Plot_Object, tooltip = "text", height = 600) %>% 
+      config(displayModeBar = F)
     
     print(ECR_Plot_Object)
     

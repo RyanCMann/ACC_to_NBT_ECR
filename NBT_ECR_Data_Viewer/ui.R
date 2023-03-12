@@ -1,6 +1,8 @@
 # Dynamic Filtering Shiny App based on "Shiny App (R) integrating a filter with Multiple Dynamic Conditions" by Lee Rock
 # https://www.linkedin.com/pulse/shiny-app-r-integrating-filter-multiple-dynamic-conditions-lee-rock/
 
+library(plotly)
+
 shinyUI(fluidPage(
   
   # Application title
@@ -22,7 +24,7 @@ shinyUI(fluidPage(
     ),
     
     mainPanel(
-      plotOutput("ECR_Plot"),
+      plotlyOutput("ECR_Plot", height = '100%', width = 'auto'),
     )
   )
 ))
