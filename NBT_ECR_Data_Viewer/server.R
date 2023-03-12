@@ -35,7 +35,7 @@ shinyServer(function(input, output, session) {
   }) 
   
   output$Day_Type_List <- renderUI({
-    Day_Type_List <- c("Weekday", "Weekend/Holiday")
+    Day_Type_List <- c("Weekday", "Weekend & Holiday")
     selectizeInput("Day_Type_Choose", "Day Type:", Day_Type_List)
   }) 
   
@@ -140,7 +140,7 @@ shinyServer(function(input, output, session) {
       mutate(Rate_Season = ifelse(Month %in% Summer_Months(), "Summer",
                                   ifelse(Month %in% Winter_Months(), "Winter",
                                          "Spring"))) %>%
-      mutate(DayType = ifelse(DayTypeStart == 6 & DayTypeEnd == 8, "Weekend/Holiday", "Weekday")) %>%
+      mutate(DayType = ifelse(DayTypeStart == 6 & DayTypeEnd == 8, "Weekend & Holiday", "Weekday")) %>%
       mutate(ACC_Year = year(DateStart)) %>%
       mutate(Hour_Beginning = as.numeric(str_sub(TimeStart, 1, 2)))
     

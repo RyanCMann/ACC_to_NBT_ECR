@@ -5,9 +5,9 @@ account: osesmo
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8543804
-bundleId: 6947859
+bundleId: 6948895
 url: https://osesmo.shinyapps.io/NBT_ECR_Data_Viewer/
-when: 1678610979.28221
-lastSyncTime: 1678610979.28222
+when: 1678645119.70952
+lastSyncTime: 1678645119.70953
 asMultiple: FALSE
 asStatic: FALSE
