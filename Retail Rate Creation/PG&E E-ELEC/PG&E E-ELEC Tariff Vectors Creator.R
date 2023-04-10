@@ -57,13 +57,13 @@ PGE_E_ELEC_Cost_Vectors <- data.frame(Date_Time = seq.POSIXt(Start_Date_Time,
 
 # Values are for PG&E E-ELEC, in US $.
 
-Summer_Peak_Rate = 0.52979
-Summer_Partial_Peak_Rate = 0.36791
-Summer_Off_Peak_Rate = 0.31123
+Summer_Peak_Rate = 0.54649
+Summer_Partial_Peak_Rate = 0.38461
+Summer_Off_Peak_Rate = 0.32793
 
-Winter_Peak_Rate = 0.29828
-Winter_Partial_Peak_Rate = 0.27619
-Winter_Off_Peak_Rate = 0.26233
+Winter_Peak_Rate = 0.31497
+Winter_Partial_Peak_Rate = 0.29288
+Winter_Off_Peak_Rate = 0.27902
 
 # Bills are assumed to be monthly, and fall at the end of every month, 
 # so there are no billing periods that fall into both winter and summer periods.
