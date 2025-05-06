@@ -10,7 +10,7 @@
 # This script generates a time-series vector for the user's choice of year.
 # This value must be input by the user to match the desired year to be modeled.
 
-Data_Year <- 2023
+Data_Year <- 2025
 
 Data_Timestep_Length = 60 # Timestep length, in minutes
 
@@ -57,13 +57,13 @@ PGE_E_ELEC_Cost_Vectors <- data.frame(Date_Time = seq.POSIXt(Start_Date_Time,
 
 # Values are for PG&E E-ELEC, in US $.
 
-Summer_Peak_Rate = 0.54649
-Summer_Partial_Peak_Rate = 0.38461
-Summer_Off_Peak_Rate = 0.32793
+Summer_Peak_Rate = 0.61418
+Summer_Partial_Peak_Rate = 0.45230
+Summer_Off_Peak_Rate = 0.39562
 
-Winter_Peak_Rate = 0.31497
-Winter_Partial_Peak_Rate = 0.29288
-Winter_Off_Peak_Rate = 0.27902
+Winter_Peak_Rate = 0.38266
+Winter_Partial_Peak_Rate = 0.36057
+Winter_Off_Peak_Rate = 0.34671
 
 # Bills are assumed to be monthly, and fall at the end of every month, 
 # so there are no billing periods that fall into both winter and summer periods.
@@ -77,9 +77,9 @@ PGE_E_ELEC_Cost_Vectors <- PGE_E_ELEC_Cost_Vectors %>%
   mutate(Season = ifelse(Month %in% c(6:9), "Summer", "Winter")) %>% 
   mutate(Hour_Beginning = hour(Date_Time) + minute(Date_Time)/60) # ex. 8:30 am = 8.5
 
-# PG&E Holiday List 2023: https://www.pge.com/tariffs/toudates.shtml
-PGE_Holidays_2023 <- read.csv(file.path(Code_WD,
-                                   "PG&E_Holidays_2023.csv")) %>%
+# PG&E Holiday List: https://www.pge.com/tariffs/toudates.shtml
+PGE_Holidays <- read.csv(file.path(Code_WD,
+                                   "PG&E_Holidays_2025.csv")) %>%
   pivot_longer(New.Years.Day:Christmas, "Holiday_Name", values_to = "Holiday_Date") %>%
   mutate(Holiday_Date = as.Date(Holiday_Date, tz = "America/Los_Angeles")) %>%
   mutate(Holiday_Flag = TRUE) %>%
@@ -89,7 +89,7 @@ PGE_E_ELEC_Cost_Vectors <- PGE_E_ELEC_Cost_Vectors %>%
   mutate(Date = as.Date(Date_Time, tz = "America/Los_Angeles")) %>%
   mutate(Day_of_Week = weekdays(Date_Time)) %>%
   mutate(Weekend_Flag = Day_of_Week %in% c("Saturday", "Sunday")) %>%
-  left_join(PGE_Holidays_2023, by = c("Date" = "Holiday_Date")) %>% 
+  left_join(PGE_Holidays, by = c("Date" = "Holiday_Date")) %>% 
   mutate(Holiday_Flag = replace_na(Holiday_Flag, FALSE)) %>%
   mutate(DayType = ifelse(Weekend_Flag | Holiday_Flag, "Weekend & Holiday", "Weekday")) %>% 
   select(-Date, -Day_of_Week, -Weekend_Flag, -Holiday_Flag)
