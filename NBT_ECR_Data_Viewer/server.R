@@ -232,8 +232,8 @@ shinyServer(function(input, output, session) {
     
     if(input$Utility_Name_Choose == "PG&E"){
       read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                      "Retail%20Rate%20Creation/PG%26E%20E-ELEC/2023/60-Minute%20Data/Dataframe%20Format/",
-                      "2023_PGE_E_ELEC_Cost_Dataframe.csv")) %>%
+                      "Retail%20Rate%20Creation/PG%26E%20E-ELEC/2025/60-Minute%20Data/Dataframe%20Format/",
+                      "2025_PGE_E_ELEC_Cost_Dataframe.csv")) %>%
         filter(month.abb[Month] %in% unique(Fully_Filtered_Export_Compensation_Rates()$Month)) %>%
         rename(Rate = Retail_Rate)
       
