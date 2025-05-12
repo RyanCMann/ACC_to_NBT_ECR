@@ -10,7 +10,7 @@
 # This script generates a time-series vector for the user's choice of year.
 # This value must be input by the user to match the desired year to be modeled.
 
-Data_Year <- 2023
+Data_Year <- 2025
 
 Data_Timestep_Length = 60 # Timestep length, in minutes
 
@@ -57,13 +57,13 @@ SDGE_EV_TOU_5_Cost_Vectors <- data.frame(Date_Time = seq.POSIXt(Start_Date_Time,
 
 # Values are for SDG&E EV-TOU-5, in US $.
 
-Summer_On_Peak_Rate = 0.81629
-Summer_Off_Peak_Rate = 0.48129
-Summer_Super_Off_Peak_Rate = 0.15351
+Summer_On_Peak_Rate = 0.71106
+Summer_Off_Peak_Rate = 0.45460
+Summer_Super_Off_Peak_Rate = 0.12017
 
-Winter_On_Peak_Rate = 0.51149
-Winter_Off_Peak_Rate = 0.44775
-Winter_Super_Off_Peak_Rate = 0.14520
+Winter_On_Peak_Rate = 0.47772
+Winter_Off_Peak_Rate = 0.42893
+Winter_Super_Off_Peak_Rate = 0.11381
 
 # Bills are assumed to be monthly, and fall at the end of every month, 
 # so there are no billing periods that fall into both winter and summer periods.
@@ -77,9 +77,9 @@ SDGE_EV_TOU_5_Cost_Vectors <- SDGE_EV_TOU_5_Cost_Vectors %>%
   mutate(Season = ifelse(Month %in% c(6:10), "Summer", "Winter")) %>% 
   mutate(Hour_Beginning = hour(Date_Time) + minute(Date_Time)/60) # ex. 8:30 am = 8.5
 
-# SDG&E Holiday List 2023: https://www.sdge.com/sites/default/files/2023%20Billing%20Cycle%20Schedule_1.pdf
-SDGE_Holidays_2023 <- read.csv(file.path(Code_WD,
-                                         "SDG&E_Holidays_2023.csv")) %>%
+# SDG&E Holiday List 2023: https://www.sdge.com/sites/default/files/Calendar%20-%202025%20%28Approved%29.pdf
+SDGE_Holidays <- read.csv(file.path(Code_WD,
+                                         "SDG&E_Holidays_2025.csv")) %>%
   pivot_longer(New.Years.Day:Christmas, "Holiday_Name", values_to = "Holiday_Date") %>%
   mutate(Holiday_Date = as.Date(Holiday_Date, tz = "America/Los_Angeles")) %>%
   mutate(Holiday_Flag = TRUE) %>%
@@ -89,12 +89,12 @@ SDGE_EV_TOU_5_Cost_Vectors <- SDGE_EV_TOU_5_Cost_Vectors %>%
   mutate(Date = as.Date(Date_Time, tz = "America/Los_Angeles")) %>%
   mutate(Day_of_Week = weekdays(Date_Time)) %>%
   mutate(Weekend_Flag = Day_of_Week %in% c("Saturday", "Sunday")) %>%
-  left_join(SDGE_Holidays_2023, by = c("Date" = "Holiday_Date")) %>% 
+  left_join(SDGE_Holidays, by = c("Date" = "Holiday_Date")) %>% 
   mutate(Holiday_Flag = replace_na(Holiday_Flag, FALSE)) %>%
   mutate(DayType = ifelse(Weekend_Flag | Holiday_Flag, "Weekend & Holiday", "Weekday")) %>% 
   select(-Date, -Day_of_Week, -Weekend_Flag, -Holiday_Flag)
 
-rm(SDGE_Holidays_2023)
+rm(SDGE_Holidays)
 
 
 # Summer On-Peak

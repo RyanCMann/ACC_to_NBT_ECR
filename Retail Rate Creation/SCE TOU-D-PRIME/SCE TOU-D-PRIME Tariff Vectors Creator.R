@@ -10,7 +10,7 @@
 # This script generates a time-series vector for the user's choice of year.
 # This value must be input by the user to match the desired year to be modeled.
 
-Data_Year <- 2023
+Data_Year <- 2025
 
 Data_Timestep_Length = 60 # Timestep length, in minutes
 
@@ -58,13 +58,13 @@ SCE_TOU_D_PRIME_Cost_Vectors <- data.frame(Date_Time = seq.POSIXt(Start_Date_Tim
 
 # Values are for SCE TOU-D-PRIME, in US $.
 
-Summer_On_Peak_Rate = 0.22197 + 0.40040 + 0.00090
-Summer_Mid_Peak_Rate = 0.22197 + 0.14249 + 0.00090
-Summer_Off_Peak_Rate = 0.14726 + 0.09513 + 0.00090
+Summer_On_Peak_Rate = 0.28441 + 0.28317 + 0.00198 + 0.00160
+Summer_Mid_Peak_Rate = 0.28441 + 0.10077 + 0.00198 + 0.00160
+Summer_Off_Peak_Rate = 0.19835 + 0.06728 + 0.00198 + 0.00160
 
-Winter_Mid_Peak_Rate = 0.22761 + 0.33729 + 0.00090
-Winter_Off_Peak_Rate = 0.14084 + 0.08079 + 0.00090
-Winter_Super_Off_Peak_Rate = 0.14084 + 0.08079 + 0.00090
+Winter_Mid_Peak_Rate = 0.28971 + 0.24759 + 0.00198 + 0.00160
+Winter_Off_Peak_Rate = 0.19022 + 0.05686 + 0.00198 + 0.00160
+Winter_Super_Off_Peak_Rate = 0.19022 + 0.05686 + 0.00198 + 0.00160
 
 # Bills are assumed to be monthly, and fall at the end of every month, 
 # so there are no billing periods that fall into both winter and summer periods.
@@ -78,7 +78,7 @@ SCE_TOU_D_PRIME_Cost_Vectors <- SCE_TOU_D_PRIME_Cost_Vectors %>%
   mutate(Season = ifelse(Month %in% c(6:9), "Summer", "Winter")) %>% 
   mutate(Hour_Beginning = hour(Date_Time) + minute(Date_Time)/60) # ex. 8:30 am = 8.5
 
-# SCE Holiday List 2023:
+# SCE Holiday List:
 # "Holidays are
 # New Year’s Day (January 1),
 # Presidents’ Day (third Monday in February),
@@ -91,8 +91,8 @@ SCE_TOU_D_PRIME_Cost_Vectors <- SCE_TOU_D_PRIME_Cost_Vectors %>%
 # When any holiday listed above falls on Sunday,
 # the following Monday will be recognized as a holiday.
 # No change will be made for holidays falling on Saturday."
-SCE_Holidays_2023 <- read.csv(file.path(Code_WD,
-                                        "SCE_Holidays_2023.csv")) %>%
+SCE_Holidays <- read.csv(file.path(Code_WD,
+                                        "SCE_Holidays_2025.csv")) %>%
   pivot_longer(New.Years.Day:Christmas, "Holiday_Name", values_to = "Holiday_Date") %>%
   mutate(Holiday_Date = as.Date(Holiday_Date, tz = "America/Los_Angeles")) %>%
   mutate(Holiday_Flag = TRUE) %>%
@@ -102,12 +102,12 @@ SCE_TOU_D_PRIME_Cost_Vectors <- SCE_TOU_D_PRIME_Cost_Vectors %>%
   mutate(Date = as.Date(Date_Time, tz = "America/Los_Angeles")) %>%
   mutate(Day_of_Week = weekdays(Date_Time)) %>%
   mutate(Weekend_Flag = Day_of_Week %in% c("Saturday", "Sunday")) %>%
-  left_join(SCE_Holidays_2023, by = c("Date" = "Holiday_Date")) %>% 
+  left_join(SCE_Holidays, by = c("Date" = "Holiday_Date")) %>% 
   mutate(Holiday_Flag = replace_na(Holiday_Flag, FALSE)) %>%
   mutate(DayType = ifelse(Weekend_Flag | Holiday_Flag, "Weekend & Holiday", "Weekday")) %>% 
   select(-Date, -Day_of_Week, -Weekend_Flag, -Holiday_Flag)
 
-rm(SCE_Holidays_2023)
+rm(SCE_Holidays)
 
 
 # Summer On-Peak
