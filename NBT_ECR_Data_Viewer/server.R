@@ -240,14 +240,14 @@ shinyServer(function(input, output, session) {
     } else if(input$Utility_Name_Choose == "SCE"){
       read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
                       "Retail%20Rate%20Creation/SCE%20TOU-D-PRIME/2025/60-Minute%20Data/Dataframe%20Format/",
-                      "2023_SCE_TOU_D_PRIME_Cost_Dataframe.csv")) %>%
+                      "2025_SCE_TOU_D_PRIME_Cost_Dataframe.csv")) %>%
         filter(month.abb[Month] %in% unique(Fully_Filtered_Export_Compensation_Rates()$Month)) %>%
         rename(Rate = Retail_Rate)
       
     } else if(input$Utility_Name_Choose == "SDG&E"){
       read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
                       "Retail%20Rate%20Creation/SDG%26E%20EV-TOU-5/2025/60-Minute%20Data/Dataframe%20Format/",
-                      "2023_SDGE_EV_TOU_5_Cost_Dataframe.csv")) %>%
+                      "2025_SDGE_EV_TOU_5_Cost_Dataframe.csv")) %>%
         filter(month.abb[Month] %in% unique(Fully_Filtered_Export_Compensation_Rates()$Month)) %>%
         rename(Rate = Retail_Rate)
     }
