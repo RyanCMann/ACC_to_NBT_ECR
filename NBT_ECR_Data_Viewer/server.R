@@ -20,7 +20,7 @@ shinyServer(function(input, output, session) {
   
   #### Create User Input Dropdowns ####
   output$Customer_Segment_List <- renderUI({
-    Customer_Segment_List <- c("Residential General Market", "Residential Low-Income", "Non-Residential")
+    Customer_Segment_List <- c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential")
     selectizeInput("Customer_Segment_Choose", "Customer Segment:", Customer_Segment_List)
   })
   
@@ -44,21 +44,28 @@ shinyServer(function(input, output, session) {
     selectizeInput("ACC_Year_Choose", "ACC Year:", ACC_Year_List)
   })
   
+  output$IX_App_Year_List <- renderUI({
+    IX_App_Year_List <- seq(2023, 2030)
+    selectizeInput("IX_App_Year_Choose", "Final Interconnection Application Year:", IX_App_Year_List)
+  })
+  
   
   #### Load and Process ACC Plus Adder Data ####
   ACC_Plus_Adders <- read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                                     "NBT%20ECR%20Visualization/ACC%20Plus%20Adders.csv")) %>%
-    gather(key = "Utility", value = "Adder", PG.E:SCE) %>%
-    mutate(Utility = gsub("\\.", "&", Utility))
+                                     "NBT%20ECR%20Visualization/ACC%20Plus%20Adders%20by%20Year.csv")) %>%
+    gather(key = "IX.App.Year", value = "Adder", X2023:X2030) %>%
+    mutate(IX.App.Year = gsub("X", "", IX.App.Year))
   
   ACC_Plus_Adder <- reactive({
     
     req(input$Customer_Segment_Choose)
     req(input$Utility_Name_Choose)
+    req(input$IX_App_Year_Choose)
     
     ACC_Plus_Adders_Filtered <- ACC_Plus_Adders %>%
       filter(Customer.Segment == input$Customer_Segment_Choose,
-             Utility == input$Utility_Name_Choose)
+             Utility == input$Utility_Name_Choose,
+             IX.App.Year == as.character(input$IX_App_Year_Choose))
     
     ACC_Plus_Adders_Filtered$Adder
     
@@ -336,6 +343,7 @@ shinyServer(function(input, output, session) {
     Plot_Title <- gsub("Residential", "Resi", Plot_Title)
     Plot_Title <- gsub("General Market", "GM", Plot_Title)
     Plot_Title <- gsub("Low-Income", "LI", Plot_Title)
+    Plot_Title <- gsub("New Home/Change of Party", "NH/CoP", Plot_Title)
     
     ECR_Plot_Object <- ggplot(Plot_Ready_Rates(),
                               aes(group = 1,
