@@ -27,11 +27,12 @@ Retail_Rate_WD <- getwd()
 
 #### User Inputs for Single Plot ####
 
-# Customer_Segment <- "Residential General Market" # "Residential General Market", "Residential Low-Income", "Non-Residential"
+# Customer_Segment <- "Residential General Market" # "Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential"
 # Utility_Name <- "PG&E" # "PG&E", "SCE", "SDG&E"
 # Rate_Season <- "Summer" # "Summer", "Winter", "Spring" (Note: "Spring" only applies to SDG&E)
 # Day_Type <- "Weekday" # "Weekday", "Weekend & Holiday"
-# ACC_Year <- 2023 # 2023 . . . 2052
+# ACC_Year <- 2025 # Simulation Year in Avoided Cost Calculator (not vintage of ACC spreadsheet) 2023 . . . 2052
+# IX_App_Year <- 2025 # Final Interconnection Application Year 2023 . . . 2030
 
 
 ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_Year){
@@ -64,11 +65,12 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
   
   #### Load and Process ACC Plus Adder Data ####
   
-  ACC_Plus_Adders <- read.csv(file.path(Code_WD, "ACC Plus Adders.csv")) %>%
-    gather(key = "Utility", value = "Adder", PG.E:SCE) %>%
-    mutate(Utility = gsub("\\.", "&", Utility)) %>%
+  ACC_Plus_Adders <- read.csv(file.path(Code_WD, "ACC Plus Adders by Year.csv")) %>%
+    gather(key = "IX.App.Year", value = "Adder", X2023:X2030) %>%
+    mutate(IX.App.Year = gsub("X", "", IX.App.Year)) %>%
     filter(Utility_Name == Utility,
-           Customer.Segment == Customer_Segment)
+           Customer.Segment == Customer_Segment,
+           IX.App.Year == as.character(IX_App_Year))
   
   ACC_Plus_Adder <- ACC_Plus_Adders$Adder
   
@@ -158,29 +160,29 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
   if(Utility_Name == "PG&E"){
     Retail_Rates <- readRDS(file.path(Retail_Rate_WD,
                                       "PG&E E-ELEC",
-                                      "2023",
+                                      "2025",
                                       "60-Minute Data",
                                       "Dataframe Format",
-                                      "2023_PGE_E_ELEC_Cost_Dataframe.rds"))
+                                      "2025_PGE_E_ELEC_Cost_Dataframe.rds"))
     Retail_Rate_Name <- "E-ELEC"
     
   }else if(Utility_Name == "SCE"){
     
     Retail_Rates <- readRDS(file.path(Retail_Rate_WD,
                                       "SCE TOU-D-PRIME",
-                                      "2023",
+                                      "2025",
                                       "60-Minute Data",
                                       "Dataframe Format",
-                                      "2023_SCE_TOU_D_PRIME_Cost_Dataframe.rds"))
+                                      "2025_SCE_TOU_D_PRIME_Cost_Dataframe.rds"))
     Retail_Rate_Name <- "TOU-D-PRIME"
     
   }else if(Utility_Name == "SDG&E"){
     Retail_Rates <- readRDS(file.path(Retail_Rate_WD,
                                       "SDG&E EV-TOU-5",
-                                      "2023",
+                                      "2025",
                                       "60-Minute Data",
                                       "Dataframe Format",
-                                      "2023_SDGE_EV_TOU_5_Cost_Dataframe.rds"))
+                                      "2025_SDGE_EV_TOU_5_Cost_Dataframe.rds"))
     Retail_Rate_Name <- "EV-TOU-5"
     
   }
@@ -193,7 +195,7 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
   Max_Retail_Rate <- max(Retail_Rates$Rate)
   
   
-  if(ACC_Year == 2023 && Customer_Segment == "Residential General Market"){
+  if(ACC_Year == 2025 && Customer_Segment == "Residential General Market"){
     
     Retail_Rate_Overlay <- TRUE
     
