@@ -168,8 +168,29 @@ shinyServer(function(input, output, session) {
   
   #### Dynamically Update Export Compensation Rate Year Dropdown Options Based On Available Data ####
   observeEvent(Mutated_Export_Compensation_Rates(), {
-    ACC_Year_List_Update <- sort(unique(as.vector(Mutated_Export_Compensation_Rates()$ACC_Year)), decreasing = FALSE)
-    updateSelectizeInput(session = session, inputId = "ACC_Year_Choose", choices = ACC_Year_List_Update, selected = input$ACC_Year_Choose)
+    ACC_Year_List_Available <- sort(unique(as.vector(Mutated_Export_Compensation_Rates()$ACC_Year)), decreasing = FALSE)
+    
+    # Further filter based on interconnection year constraint
+    if (!is.null(input$IX_App_Year_Choose)) {
+      ACC_Year_List_Available <- ACC_Year_List_Available[ACC_Year_List_Available >= as.numeric(input$IX_App_Year_Choose)]
+    }
+    
+    # Only update if the available years have changed
+    current_choices <- as.numeric(isolate(input$ACC_Year_Choose))
+    if (!identical(sort(ACC_Year_List_Available), sort(as.numeric(names(isolate(input$ACC_Year_Choose)))))) {
+      
+      # Preserve current selection if still valid
+      if (!is.null(input$ACC_Year_Choose) && as.numeric(input$ACC_Year_Choose) %in% ACC_Year_List_Available) {
+        selected_year <- input$ACC_Year_Choose
+      } else {
+        selected_year <- ACC_Year_List_Available[1]
+      }
+      
+      updateSelectizeInput(session = session, 
+                           inputId = "ACC_Year_Choose", 
+                           choices = ACC_Year_List_Available, 
+                           selected = selected_year)
+    }
   })
   
   
