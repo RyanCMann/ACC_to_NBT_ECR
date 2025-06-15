@@ -41,11 +41,11 @@ shinyServer(function(input, output, session) {
   
   output$ACC_Year_List <- renderUI({
     ACC_Year_List <- seq(2023, 2052)
-    selectizeInput("ACC_Year_Choose", "ACC Year:", ACC_Year_List)
+    selectizeInput("ACC_Year_Choose", "Export Compensation Rate Year:", ACC_Year_List)
   })
   
   output$IX_App_Year_List <- renderUI({
-    IX_App_Year_List <- seq(2023, 2030)
+    IX_App_Year_List <- seq(2023, 2026)
     selectizeInput("IX_App_Year_Choose", "Final Interconnection Application Year:", IX_App_Year_List)
   })
   
