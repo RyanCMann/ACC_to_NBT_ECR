@@ -57,12 +57,12 @@ SDGE_EV_TOU_5_Cost_Vectors <- data.frame(Date_Time = seq.POSIXt(Start_Date_Time,
 
 # Values are for SDG&E EV-TOU-5, in US $.
 
-Summer_On_Peak_Rate = 0.71106
-Summer_Off_Peak_Rate = 0.45460
+Summer_On_Peak_Rate = 0.73092
+Summer_Off_Peak_Rate = 0.47446
 Summer_Super_Off_Peak_Rate = 0.12017
 
-Winter_On_Peak_Rate = 0.47772
-Winter_Off_Peak_Rate = 0.42893
+Winter_On_Peak_Rate = 0.49758
+Winter_Off_Peak_Rate = 0.44879
 Winter_Super_Off_Peak_Rate = 0.11381
 
 # Bills are assumed to be monthly, and fall at the end of every month, 
@@ -77,7 +77,7 @@ SDGE_EV_TOU_5_Cost_Vectors <- SDGE_EV_TOU_5_Cost_Vectors %>%
   mutate(Season = ifelse(Month %in% c(6:10), "Summer", "Winter")) %>% 
   mutate(Hour_Beginning = hour(Date_Time) + minute(Date_Time)/60) # ex. 8:30 am = 8.5
 
-# SDG&E Holiday List 2023: https://www.sdge.com/sites/default/files/Calendar%20-%202025%20%28Approved%29.pdf
+# SDG&E Holiday List 2025: https://www.sdge.com/sites/default/files/Calendar%20-%202025%20%28Approved%29.pdf
 SDGE_Holidays <- read.csv(file.path(Code_WD,
                                          "SDG&E_Holidays_2025.csv")) %>%
   pivot_longer(New.Years.Day:Christmas, "Holiday_Name", values_to = "Holiday_Date") %>%

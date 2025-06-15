@@ -58,13 +58,13 @@ SCE_TOU_D_PRIME_Cost_Vectors <- data.frame(Date_Time = seq.POSIXt(Start_Date_Tim
 
 # Values are for SCE TOU-D-PRIME, in US $.
 
-Summer_On_Peak_Rate = 0.28441 + 0.28317 + 0.00198 + 0.00160
-Summer_Mid_Peak_Rate = 0.28441 + 0.10077 + 0.00198 + 0.00160
-Summer_Off_Peak_Rate = 0.19835 + 0.06728 + 0.00198 + 0.00160
+Summer_On_Peak_Rate = 0.27693 + 0.28317 + 0.00198 + 0.00160
+Summer_Mid_Peak_Rate = 0.27693 + 0.10077 + 0.00198 + 0.00160
+Summer_Off_Peak_Rate = 0.19236 + 0.06728 + 0.00198 + 0.00160
 
-Winter_Mid_Peak_Rate = 0.28971 + 0.24759 + 0.00198 + 0.00160
-Winter_Off_Peak_Rate = 0.19022 + 0.05686 + 0.00198 + 0.00160
-Winter_Super_Off_Peak_Rate = 0.19022 + 0.05686 + 0.00198 + 0.00160
+Winter_Mid_Peak_Rate = 0.28223 + 0.24759 + 0.00198 + 0.00160
+Winter_Off_Peak_Rate = 0.18446 + 0.05686 + 0.00198 + 0.00160
+Winter_Super_Off_Peak_Rate = 0.18446 + 0.05686 + 0.00198 + 0.00160
 
 # Bills are assumed to be monthly, and fall at the end of every month, 
 # so there are no billing periods that fall into both winter and summer periods.
