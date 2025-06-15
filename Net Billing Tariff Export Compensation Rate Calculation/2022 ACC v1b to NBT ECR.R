@@ -33,13 +33,13 @@ options(scipen = 999)
 options(dplyr.summarise.inform = FALSE)
 
 # Set Working Directories
-setwd("~/Desktop/Avoided Cost Calculator to Net Billing Tariff Export Compensation Rate/Net Billing Tariff Export Compensation Rate Calculation")
+setwd("~/Library/Mobile Documents/com~apple~CloudDocs/Ryan's Stuff/2023/ACC_to_NBT_ECR/Net Billing Tariff Export Compensation Rate Calculation")
 Code_WD <- getwd()
 
-setwd("/Users/ryanmann/Desktop/Avoided Cost Calculator to Net Billing Tariff Export Compensation Rate/2022 ACC v1b")
+setwd("~/Library/Mobile Documents/com~apple~CloudDocs/Ryan's Stuff/2023/ACC_to_NBT_ECR/2022 ACC v1b")
 ACC_WD <- getwd()
 
-setwd("/Users/ryanmann/Desktop/Avoided Cost Calculator to Net Billing Tariff Export Compensation Rate/DGStats Installed Capacity by Climate Zone")
+setwd("~/Library/Mobile Documents/com~apple~CloudDocs/Ryan's Stuff/2023/ACC_to_NBT_ECR/DGStats Installed Capacity by Climate Zone")
 CZ_Weighting_WD <- getwd()
 
 
