@@ -14,13 +14,13 @@ shinyUI(fluidPage(
       
       uiOutput("Utility_Name_List"),
       
+      uiOutput("IX_App_Year_List"),
+      
       uiOutput("Rate_Season_List"),
 
       uiOutput("Day_Type_List"),
 
       uiOutput("ACC_Year_List"),
-      
-      uiOutput("IX_App_Year_List"),
       
       downloadButton("downloadData", label = "Download NBT ECR in CEC MIDAS TOU Format")
     ),

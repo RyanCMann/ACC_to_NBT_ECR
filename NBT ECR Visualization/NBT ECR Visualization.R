@@ -32,30 +32,36 @@ Retail_Rate_WD <- getwd()
 # Rate_Season <- "Summer" # "Summer", "Winter", "Spring" (Note: "Spring" only applies to SDG&E)
 # Day_Type <- "Weekday" # "Weekday", "Weekend & Holiday"
 # ACC_Year <- 2025 # Simulation Year in Avoided Cost Calculator (not vintage of ACC spreadsheet) 2023 . . . 2052
-# IX_App_Year <- 2025 # Final Interconnection Application Year 2023 . . . 2030
+# IX_App_Year <- 2025 # Final Interconnection Application Year 2023 . . . 2026
 
 
 ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_Year){
   
   #### Input Mapping ####
   
+  if(IX_App_Year %in% c(2023, 2024)){
+    ACC_Vintage = 2022
+  }else if(IX_App_Year %in% c(2025, 2026)){
+    ACC_Vintage = 2024
+  }
+  
   if(Utility_Name == "PG&E"){
     NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
+                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/", ACC_Vintage, "%20ACC%20NBT%20ECRs/",
                            "PG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")
     Winter_Months <- c("Jan", "Feb", "Mar", "Apr", "May", "Oct", "Nov", "Dec")
     Spring_Months <- NA
     Summer_Months <- c("Jun", "Jul", "Aug", "Sep")
   } else if(Utility_Name == "SCE"){
     NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
+                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/", ACC_Vintage, "%20ACC%20NBT%20ECRs/",
                            "SCE%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")
     Winter_Months <- c("Jan", "Feb", "Mar", "Apr", "May", "Oct", "Nov", "Dec")
     Spring_Months <- NA
     Summer_Months = c("Jun", "Jul", "Aug", "Sep")
   } else if(Utility_Name == "SDG&E"){
     NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
+                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/", ACC_Vintage, "%20ACC%20NBT%20ECRs/",
                            "SDG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")
     Winter_Months <- c("Jan", "Feb", "May", "Nov", "Dec")
     Spring_Months <- c("Mar", "Apr")

@@ -29,6 +29,11 @@ shinyServer(function(input, output, session) {
     selectizeInput("Utility_Name_Choose", "Utility Name:", Utility_Name_List)
   }) 
   
+  output$IX_App_Year_List <- renderUI({
+    IX_App_Year_List <- seq(2023, 2026)
+    selectizeInput("IX_App_Year_Choose", "Final Interconnection Application Year:", choices = IX_App_Year_List, selected = 2025)
+  })
+  
   output$Rate_Season_List <- renderUI({
     Rate_Season_List <- c("Summer", "Winter", "Spring")
     selectizeInput("Rate_Season_Choose", "Rate Season:", Rate_Season_List)
@@ -40,14 +45,10 @@ shinyServer(function(input, output, session) {
   }) 
   
   output$ACC_Year_List <- renderUI({
-    ACC_Year_List <- seq(2023, 2052)
-    selectizeInput("ACC_Year_Choose", "Export Compensation Rate Year:", ACC_Year_List)
+    ACC_Year_List <- seq(2023, 2054)
+    selectizeInput("ACC_Year_Choose", "Export Compensation Rate Year:", choices = ACC_Year_List, selected = 2025)
   })
-  
-  output$IX_App_Year_List <- renderUI({
-    IX_App_Year_List <- seq(2023, 2026)
-    selectizeInput("IX_App_Year_Choose", "Final Interconnection Application Year:", IX_App_Year_List)
-  })
+
   
   
   #### Load and Process ACC Plus Adder Data ####
@@ -77,22 +78,27 @@ shinyServer(function(input, output, session) {
     
     req(input$Utility_Name_Choose)
     
+    req(input$IX_App_Year_Choose)
+    
+    if(input$IX_App_Year_Choose %in% c(2023, 2024)){
+      ACC_Vintage <- 2022
+    }else if(input$IX_App_Year_Choose %in% c(2025, 2026)){
+      ACC_Vintage <- 2024
+    }
+    
+    NBT_ECRs_Directory <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
+                                 "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/", ACC_Vintage, "%20ACC%20NBT%20ECRs/")
+    
     if(input$Utility_Name_Choose == "PG&E"){
-      read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                      "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
-                      "PG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
+      read.csv(paste0(NBT_ECRs_Directory, "PG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
         mutate(Value = Value + ACC_Plus_Adder())
       
     } else if(input$Utility_Name_Choose == "SCE"){
-      read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                      "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
-                      "SCE%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
+      read.csv(paste0(NBT_ECRs_Directory, "SCE%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
         mutate(Value = Value + ACC_Plus_Adder())
       
     } else if(input$Utility_Name_Choose == "SDG&E"){
-      read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                      "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
-                      "SDG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
+      read.csv(paste0(NBT_ECRs_Directory, "SDG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
         mutate(Value = Value + ACC_Plus_Adder())
     }
     
@@ -160,6 +166,12 @@ shinyServer(function(input, output, session) {
     updateSelectizeInput(session = session, inputId = "Rate_Season_Choose", choices = Rate_Season_List_Update, selected = input$Rate_Season_Choose)
   })
   
+  #### Dynamically Update Export Compensation Rate Year Dropdown Options Based On Available Data ####
+  observeEvent(Mutated_Export_Compensation_Rates(), {
+    ACC_Year_List_Update <- sort(unique(as.vector(Mutated_Export_Compensation_Rates()$ACC_Year)), decreasing = FALSE)
+    updateSelectizeInput(session = session, inputId = "ACC_Year_Choose", choices = ACC_Year_List_Update, selected = input$ACC_Year_Choose)
+  })
+  
   
   #### Filter ECR Data Based on Rate Season ####
   Season_Filtered_Export_Compensation_Rates <- reactive({
@@ -190,19 +202,19 @@ shinyServer(function(input, output, session) {
   
   
   #### Load Retail Rates and Convert to Plot-Ready Format ####
-  # Note: only including retail rate comparison for 2023 ACC Year,
+  # Note: only including retail rate comparison for 2025 ACC Year,
   # and for Residential General Market customer segment.
-  # Retail rate data is still loaded for ACC Years beyond 2023,
+  # Retail rate data is still loaded for ACC Years beyond 2025,
   # because the maximum value is used to set the y-axis upper limit.
   
-  # Did not plot retail rates for post-2023 ACC years
+  # Did not plot retail rates for post-2025 ACC years
   # because future retail rate values are not available.
   # Alternative approach would be to apply a
   # 4-percent average escalation of residential retail rates
   # https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M343/K979/343979448.docx
   # (pg. 13)
-  # so that post-2023 Export Compensation Rates
-  # can be compared to estimated post-2023 retail rate values.
+  # so that post-2025 Export Compensation Rates
+  # can be compared to estimated post-2025 retail rate values.
   
   # Did not plot retail rates for Residential Low-Income customer segment
   # because some low-income customers are receiving the CARE discount,
@@ -225,7 +237,7 @@ shinyServer(function(input, output, session) {
   Retail_Rate_Overlay <- reactive({
     req(input$ACC_Year_Choose)
     req(input$Customer_Segment_Choose)
-    if(input$ACC_Year_Choose == 2023 && input$Customer_Segment_Choose == "Residential General Market"){
+    if(input$ACC_Year_Choose == 2025 && input$Customer_Segment_Choose == "Residential General Market"){
       TRUE
     }else{
       FALSE
@@ -335,6 +347,7 @@ shinyServer(function(input, output, session) {
     
     Plot_Title <- paste(input$Customer_Segment_Choose,
                         input$Utility_Name_Choose,
+                        paste0("IX", input$IX_App_Year_Choose),
                         input$Rate_Season_Choose,
                         input$Day_Type_Choose,
                         input$ACC_Year_Choose,
@@ -387,7 +400,7 @@ shinyServer(function(input, output, session) {
   
   
   #### Download Non-Filtered ECR Data as CSV ####
-  # Includes only one utility and customer segment (ACC Plus Adder Value),
+  # Includes only one utility, customer segment, and final interconnection application year,
   # but includes all rate seasons, day-types, and ACC years.
   output$downloadData <- downloadHandler(
     filename = function() {
