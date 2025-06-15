@@ -488,7 +488,7 @@ for(Utility_Name_Iter in Utility_Names){
            NBT_ECR_Filename_Components_Unbundled_Generation)
   
   write.csv(Net_Billing_Tariff_ECR_Unbundled_Generation,
-            file.path(Code_WD, NBT_ECR_Filename_Unbundled_Generation), row.names = F)
+            file.path(Code_WD, "2022 ACC NBT ECRs", NBT_ECR_Filename_Unbundled_Generation), row.names = F)
   
   rm(Net_Billing_Tariff_ECR_Unbundled_Generation,
      NBT_ECR_Filename_Components_Unbundled_Generation,

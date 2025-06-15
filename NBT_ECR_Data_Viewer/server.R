@@ -79,19 +79,19 @@ shinyServer(function(input, output, session) {
     
     if(input$Utility_Name_Choose == "PG&E"){
       read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                      "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/",
+                      "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
                       "PG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
         mutate(Value = Value + ACC_Plus_Adder())
       
     } else if(input$Utility_Name_Choose == "SCE"){
       read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                      "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/",
+                      "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
                       "SCE%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
         mutate(Value = Value + ACC_Plus_Adder())
       
     } else if(input$Utility_Name_Choose == "SDG&E"){
       read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                      "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/",
+                      "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
                       "SDG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
         mutate(Value = Value + ACC_Plus_Adder())
     }

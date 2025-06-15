@@ -41,21 +41,21 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
   
   if(Utility_Name == "PG&E"){
     NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/",
+                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
                            "PG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")
     Winter_Months <- c("Jan", "Feb", "Mar", "Apr", "May", "Oct", "Nov", "Dec")
     Spring_Months <- NA
     Summer_Months <- c("Jun", "Jul", "Aug", "Sep")
   } else if(Utility_Name == "SCE"){
     NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/",
+                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
                            "SCE%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")
     Winter_Months <- c("Jan", "Feb", "Mar", "Apr", "May", "Oct", "Nov", "Dec")
     Spring_Months <- NA
     Summer_Months = c("Jun", "Jul", "Aug", "Sep")
   } else if(Utility_Name == "SDG&E"){
     NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/",
+                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/2022%20ACC%20NBT%20ECRs/",
                            "SDG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")
     Winter_Months <- c("Jan", "Feb", "May", "Nov", "Dec")
     Spring_Months <- c("Mar", "Apr")
