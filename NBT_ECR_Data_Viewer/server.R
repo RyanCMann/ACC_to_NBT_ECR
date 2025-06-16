@@ -19,9 +19,9 @@ shinyServer(function(input, output, session) {
   
   
   #### Create User Input Dropdowns ####
-  output$Customer_Segment_List <- renderUI({
-    Customer_Segment_List <- c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential")
-    selectizeInput("Customer_Segment_Choose", "Customer Segment:", Customer_Segment_List)
+  output$ECR_Customer_Segment_List <- renderUI({
+    ECR_Customer_Segment_List <- c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential")
+    selectizeInput("ECR_Customer_Segment_Choose", "Export Compensation Rate Customer Segment:", ECR_Customer_Segment_List)
   })
   
   output$Utility_Name_List <- renderUI({
@@ -59,12 +59,12 @@ shinyServer(function(input, output, session) {
   
   ACC_Plus_Adder <- reactive({
     
-    req(input$Customer_Segment_Choose)
+    req(input$ECR_Customer_Segment_Choose)
     req(input$Utility_Name_Choose)
     req(input$IX_App_Year_Choose)
     
     ACC_Plus_Adders_Filtered <- ACC_Plus_Adders %>%
-      filter(Customer.Segment == input$Customer_Segment_Choose,
+      filter(Customer.Segment == input$ECR_Customer_Segment_Choose,
              Utility == input$Utility_Name_Choose,
              IX.App.Year == as.character(input$IX_App_Year_Choose))
     
@@ -257,8 +257,8 @@ shinyServer(function(input, output, session) {
   
   Retail_Rate_Overlay <- reactive({
     req(input$ACC_Year_Choose)
-    req(input$Customer_Segment_Choose)
-    if(input$ACC_Year_Choose == 2025 && input$Customer_Segment_Choose == "Residential General Market"){
+    req(input$ECR_Customer_Segment_Choose)
+    if(input$ACC_Year_Choose == 2025 && input$ECR_Customer_Segment_Choose == "Residential General Market"){
       TRUE
     }else{
       FALSE
@@ -366,7 +366,7 @@ shinyServer(function(input, output, session) {
   #### Create ECR Plot ####
   output$ECR_Plot <- renderPlotly({
     
-    Plot_Title <- paste(input$Customer_Segment_Choose,
+    Plot_Title <- paste(input$ECR_Customer_Segment_Choose,
                         input$Utility_Name_Choose,
                         paste0("IX", input$IX_App_Year_Choose),
                         input$Rate_Season_Choose,
@@ -425,7 +425,7 @@ shinyServer(function(input, output, session) {
   # but includes all rate seasons, day-types, and ACC years.
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste(input$Customer_Segment_Choose,
+      paste(input$ECR_Customer_Segment_Choose,
             input$Utility_Name_Choose,
             "Net Billing Tariff Export Compensation Rates.csv")
     },

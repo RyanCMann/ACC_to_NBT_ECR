@@ -10,7 +10,7 @@ shinyUI(fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      uiOutput("Customer_Segment_List"),
+      uiOutput("ECR_Customer_Segment_List"),
       
       uiOutput("Utility_Name_List"),
       
