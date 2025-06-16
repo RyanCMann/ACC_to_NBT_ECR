@@ -24,6 +24,25 @@ shinyServer(function(input, output, session) {
     selectizeInput("ECR_Customer_Segment_Choose", "Export Compensation Rate Customer Segment:", ECR_Customer_Segment_List)
   })
   
+  # Retail Rate Customer Segment Dropdown with Conditional Options
+  output$Retail_Rate_Customer_Segment_List <- renderUI({
+    req(input$ECR_Customer_Segment_Choose)
+    
+    if(input$ECR_Customer_Segment_Choose %in% c("Residential General Market", "Non-Residential")) {
+      choices <- c("No Discount")
+      selected <- "No Discount"
+    } else if(input$ECR_Customer_Segment_Choose == "Residential Low-Income") {
+      choices <- c("No Discount", "CARE", "FERA") # It's possible to be considered low-income by NBT but not receive CARE/FERA discount on retail rates. See below.
+      selected <- "CARE"
+    } else if(input$ECR_Customer_Segment_Choose == "Residential New Home/Change of Party") {
+      choices <- c("No Discount", "CARE", "FERA")
+      selected <- "No Discount"
+    }
+    
+    selectizeInput("Retail_Rate_Customer_Segment_Choose", "Retail Rate Customer Segment:", 
+                   choices = choices, selected = selected)
+  })
+  
   output$Utility_Name_List <- renderUI({
     Utility_Name_List <- c("PG&E", "SCE", "SDG&E")
     selectizeInput("Utility_Name_Choose", "Utility Name:", Utility_Name_List)
@@ -224,7 +243,8 @@ shinyServer(function(input, output, session) {
   
   #### Load Retail Rates and Convert to Plot-Ready Format ####
   # Note: only including retail rate comparison for 2025 ACC Year,
-  # and for Residential General Market customer segment.
+  # and for the residential Export Compensation Rate customer segments
+  # (including low-income segments receiving discounted retail rates).
   # Retail rate data is still loaded for ACC Years beyond 2025,
   # because the maximum value is used to set the y-axis upper limit.
   
@@ -237,10 +257,9 @@ shinyServer(function(input, output, session) {
   # so that post-2025 Export Compensation Rates
   # can be compared to estimated post-2025 retail rate values.
   
-  # Did not plot retail rates for Residential Low-Income customer segment
-  # because some low-income customers are receiving the CARE discount,
-  # some are receiving the FERA discount,
-  # and some are not receiving either discount.
+  # It's worth noting that there are some customers who are classified as low-income
+  # with respect to the Net Billing Tariff ACC Plus Adder,
+  # but who do not receive either the CARE or FERA discount on their retail rates.
   # "For purposes of the net billing tariff, 
   # low-income customers are defined as one or more of the following:
   # (i) residential customers enrolled in California Alternate Rates for Energy
@@ -258,7 +277,9 @@ shinyServer(function(input, output, session) {
   Retail_Rate_Overlay <- reactive({
     req(input$ACC_Year_Choose)
     req(input$ECR_Customer_Segment_Choose)
-    if(input$ACC_Year_Choose == 2025 && input$ECR_Customer_Segment_Choose == "Residential General Market"){
+    # Show retail rates for 2025 and residential customer segments
+    if(input$ACC_Year_Choose == 2025 && 
+       input$ECR_Customer_Segment_Choose %in% c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party")){
       TRUE
     }else{
       FALSE
@@ -294,6 +315,33 @@ shinyServer(function(input, output, session) {
     
   })
   
+  
+  #### Load Retail Rate Low-Income Discount Data ####
+  Low_Income_Discounts <- reactive({
+    read.csv("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/refs/heads/main/Retail%20Rate%20Creation/Low-Income%20Discounts/Low%20Income%20Discount%20Percentages.csv")
+  })
+  
+  # Apply low-income discount to retail rates
+  Retail_Rates_With_Discount <- reactive({
+    req(input$Utility_Name_Choose)
+    req(input$Retail_Rate_Customer_Segment_Choose)
+    
+    base_rates <- Retail_Rates_Raw()
+    
+    # Get discount rate from the low-income discount data
+    discount_data <- Low_Income_Discounts() %>%
+      filter(Utility == input$Utility_Name_Choose,
+             Discount.Program == input$Retail_Rate_Customer_Segment_Choose)
+    
+    if(nrow(discount_data) > 0) {
+      discount_rate <- discount_data$Discount.Rate[1]
+      base_rates <- base_rates %>%
+        mutate(Rate = Rate * (1 - discount_rate))
+    }
+    
+    return(base_rates)
+  })
+  
   # Get Retail Rate Name for Plot Legend
   Retail_Rate_Name <- reactive({
     req(input$Utility_Name_Choose)
@@ -308,7 +356,7 @@ shinyServer(function(input, output, session) {
   
   # Save maximum retail rate value to be used to set plot y-axis upper limit.
   Max_Retail_Rate <- reactive({
-    max(Retail_Rates_Raw()$Rate)
+    max(Retail_Rates_With_Discount()$Rate)
   })
   
   
@@ -322,7 +370,7 @@ shinyServer(function(input, output, session) {
     # so the average is being taken across identical values.
     # Make the retail rate name the first month of the year
     # (before Jan) so that it shows up first on plot legend.
-    Retail_Rates_Raw() %>%
+    Retail_Rates_With_Discount() %>%
       filter(DayType == input$Day_Type_Choose) %>%
       group_by(DayType, Hour_Beginning) %>% 
       summarize(Rate = mean(Rate)) %>% 
@@ -367,6 +415,7 @@ shinyServer(function(input, output, session) {
   output$ECR_Plot <- renderPlotly({
     
     Plot_Title <- paste(input$ECR_Customer_Segment_Choose,
+                        input$Retail_Rate_Customer_Segment_Choose,
                         input$Utility_Name_Choose,
                         paste0("IX", input$IX_App_Year_Choose),
                         input$Rate_Season_Choose,
@@ -375,6 +424,7 @@ shinyServer(function(input, output, session) {
                         "ECR Comparison")
     
     Plot_Title <- gsub("Residential", "Resi", Plot_Title)
+    Plot_Title <- gsub("No Discount ", "", Plot_Title)
     Plot_Title <- gsub("General Market", "GM", Plot_Title)
     Plot_Title <- gsub("Low-Income", "LI", Plot_Title)
     Plot_Title <- gsub("New Home/Change of Party", "NH/CoP", Plot_Title)

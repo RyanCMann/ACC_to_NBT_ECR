@@ -12,6 +12,8 @@ shinyUI(fluidPage(
     sidebarPanel(
       uiOutput("ECR_Customer_Segment_List"),
       
+      uiOutput("Retail_Rate_Customer_Segment_List"),
+      
       uiOutput("Utility_Name_List"),
       
       uiOutput("IX_App_Year_List"),
