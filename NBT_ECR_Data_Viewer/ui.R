@@ -22,7 +22,7 @@ shinyUI(fluidPage(
 
       uiOutput("Day_Type_List"),
 
-      uiOutput("ACC_Year_List"),
+      uiOutput("ECR_Year_List"),
       
       downloadButton("downloadData", label = "Download NBT ECR in CEC MIDAS TOU Format")
     ),

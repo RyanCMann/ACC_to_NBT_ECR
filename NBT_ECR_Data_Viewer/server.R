@@ -63,9 +63,9 @@ shinyServer(function(input, output, session) {
     selectizeInput("Day_Type_Choose", "Day Type:", Day_Type_List)
   }) 
   
-  output$ACC_Year_List <- renderUI({
-    ACC_Year_List <- seq(2023, 2054)
-    selectizeInput("ACC_Year_Choose", "Export Compensation Rate Year:", choices = ACC_Year_List, selected = 2025)
+  output$ECR_Year_List <- renderUI({
+    ECR_Year_List <- seq(2023, 2054)
+    selectizeInput("ECR_Year_Choose", "Export Compensation Rate Year:", choices = ECR_Year_List, selected = 2025)
   })
 
   
@@ -173,7 +173,7 @@ shinyServer(function(input, output, session) {
                                   ifelse(Month %in% Winter_Months(), "Winter",
                                          "Spring"))) %>%
       mutate(DayType = ifelse(DayTypeStart == 6 & DayTypeEnd == 8, "Weekend & Holiday", "Weekday")) %>%
-      mutate(ACC_Year = year(DateStart)) %>%
+      mutate(ECR_Year = year(DateStart)) %>%
       mutate(Hour_Beginning = as.numeric(str_sub(TimeStart, 1, 2)))
     
   })
@@ -187,27 +187,27 @@ shinyServer(function(input, output, session) {
   
   #### Dynamically Update Export Compensation Rate Year Dropdown Options Based On Available Data ####
   observeEvent(Mutated_Export_Compensation_Rates(), {
-    ACC_Year_List_Available <- sort(unique(as.vector(Mutated_Export_Compensation_Rates()$ACC_Year)), decreasing = FALSE)
+    ECR_Year_List_Available <- sort(unique(as.vector(Mutated_Export_Compensation_Rates()$ECR_Year)), decreasing = FALSE)
     
     # Further filter based on interconnection year constraint
     if (!is.null(input$IX_App_Year_Choose)) {
-      ACC_Year_List_Available <- ACC_Year_List_Available[ACC_Year_List_Available >= as.numeric(input$IX_App_Year_Choose)]
+      ECR_Year_List_Available <- ECR_Year_List_Available[ECR_Year_List_Available >= as.numeric(input$IX_App_Year_Choose)]
     }
     
     # Only update if the available years have changed
-    current_choices <- as.numeric(isolate(input$ACC_Year_Choose))
-    if (!identical(sort(ACC_Year_List_Available), sort(as.numeric(names(isolate(input$ACC_Year_Choose)))))) {
+    current_choices <- as.numeric(isolate(input$ECR_Year_Choose))
+    if (!identical(sort(ECR_Year_List_Available), sort(as.numeric(names(isolate(input$ECR_Year_Choose)))))) {
       
       # Preserve current selection if still valid
-      if (!is.null(input$ACC_Year_Choose) && as.numeric(input$ACC_Year_Choose) %in% ACC_Year_List_Available) {
-        selected_year <- input$ACC_Year_Choose
+      if (!is.null(input$ECR_Year_Choose) && as.numeric(input$ECR_Year_Choose) %in% ECR_Year_List_Available) {
+        selected_year <- input$ECR_Year_Choose
       } else {
-        selected_year <- ACC_Year_List_Available[1]
+        selected_year <- ECR_Year_List_Available[1]
       }
       
       updateSelectizeInput(session = session, 
-                           inputId = "ACC_Year_Choose", 
-                           choices = ACC_Year_List_Available, 
+                           inputId = "ECR_Year_Choose", 
+                           choices = ECR_Year_List_Available, 
                            selected = selected_year)
     }
   })
@@ -231,11 +231,11 @@ shinyServer(function(input, output, session) {
   Fully_Filtered_Export_Compensation_Rates <- reactive({
     
     req(input$Day_Type_Choose)
-    req(input$ACC_Year_Choose)
+    req(input$ECR_Year_Choose)
     
     Season_Filtered_Export_Compensation_Rates() %>%
       filter(DayType == input$Day_Type_Choose) %>%
-      filter(ACC_Year == input$ACC_Year_Choose) %>%
+      filter(ECR_Year == input$ECR_Year_Choose) %>%
       select(Month, DayType, Hour_Beginning, Rate)
     
   })
@@ -275,10 +275,10 @@ shinyServer(function(input, output, session) {
   # for non-residential customers.
   
   Retail_Rate_Overlay <- reactive({
-    req(input$ACC_Year_Choose)
+    req(input$ECR_Year_Choose)
     req(input$ECR_Customer_Segment_Choose)
     # Show retail rates for 2025 and residential customer segments
-    if(input$ACC_Year_Choose == 2025 && 
+    if(input$ECR_Year_Choose == 2025 && 
        input$ECR_Customer_Segment_Choose %in% c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party")){
       TRUE
     }else{
@@ -420,7 +420,7 @@ shinyServer(function(input, output, session) {
                         paste0("IX", input$IX_App_Year_Choose),
                         input$Rate_Season_Choose,
                         input$Day_Type_Choose,
-                        input$ACC_Year_Choose,
+                        input$ECR_Year_Choose,
                         "ECR Comparison")
     
     Plot_Title <- gsub("Residential", "Resi", Plot_Title)
