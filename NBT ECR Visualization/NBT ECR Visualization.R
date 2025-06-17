@@ -338,12 +338,13 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
 
 
 #### Iterate Through All Inputs ####
+# Warning: this will generate many gigabytes of plots if iterating through all combinations of inputs.
 
-ECR_Customer_Segments <- c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential")
-Utility_Names <- c("PG&E", "SCE", "SDG&E")
-Day_Types <- c("Weekday", "Weekend & Holiday")
-ECR_Years <- seq(2023, 2052)
-IX_App_Years <- seq(2023, 2026)
+# ECR_Customer_Segments <- c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential")
+# Utility_Names <- c("PG&E", "SCE", "SDG&E")
+# Day_Types <- c("Weekday", "Weekend & Holiday")
+# ECR_Years <- seq(2023, 2052)
+# IX_App_Years <- seq(2023, 2026)
 
 for(ECR_Customer_Segment in ECR_Customer_Segments){
   
