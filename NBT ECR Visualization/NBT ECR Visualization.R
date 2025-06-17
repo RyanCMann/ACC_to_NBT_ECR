@@ -36,7 +36,7 @@ Retail_Rate_WD <- getwd()
 # IX_App_Year <- 2025 # Final Interconnection Application Year 2023 . . . 2026
 
 
-ECR_Plot <- function(ECR_Customer_Segment, Utility_Name, Rate_Season, Day_Type, ECR_Year){
+ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, Rate_Season, Day_Type, ECR_Year, IX_App_Year){
   
   #### Input Mapping ####
   
@@ -339,22 +339,35 @@ ECR_Plot <- function(ECR_Customer_Segment, Utility_Name, Rate_Season, Day_Type, 
 
 #### Iterate Through All Inputs ####
 
-ECR_Customer_Segments <- c("Residential General Market", "Residential Low-Income", "Non-Residential")
+ECR_Customer_Segments <- c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential")
 Utility_Names <- c("PG&E", "SCE", "SDG&E")
 Day_Types <- c("Weekday", "Weekend & Holiday")
 ECR_Years <- seq(2023, 2052)
+IX_App_Years <- seq(2023, 2026)
 
 for(ECR_Customer_Segment in ECR_Customer_Segments){
-  for(Utility_Name in Utility_Names){
+  
+  if(ECR_Customer_Segment %in% c("Residential General Market", "Non-Residential")) {
+    Retail_Rate_Customer_Segments <- "No Discount"
+  } else if(ECR_Customer_Segment == "Residential Low-Income") {
+    Retail_Rate_Customer_Segments <- c("No Discount", "CARE", "FERA") # It's possible to be considered low-income by NBT but not receive CARE/FERA discount on retail rates.
+  } else if(ECR_Customer_Segment == "Residential New Home/Change of Party") {
+    Retail_Rate_Customer_Segments <- c("No Discount", "CARE", "FERA")
+  }
+  
+  for(Retail_Rate_Customer_Segment in Retail_Rate_Customer_Segments){
     
-    Rate_Seasons <- if(Utility_Name == "SDG&E") c("Summer", "Winter", "Spring") else c("Summer", "Winter")
-    
-    for(Rate_Season in Rate_Seasons){
-      for(Day_Type in Day_Types){
-        for(ECR_Year in ECR_Years){
-          
-          ECR_Plot(ECR_Customer_Segment, Utility_Name, Rate_Season, Day_Type, ECR_Year)
-          
+    for(Utility_Name in Utility_Names){
+      
+      Rate_Seasons <- if(Utility_Name == "SDG&E") c("Summer", "Winter", "Spring") else c("Summer", "Winter")
+      
+      for(Rate_Season in Rate_Seasons){
+        for(Day_Type in Day_Types){
+          for(ECR_Year in ECR_Years){
+            
+            ECR_Plot(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, Rate_Season, Day_Type, ECR_Year, IX_App_Year)
+            
+          }
         }
       }
     }
