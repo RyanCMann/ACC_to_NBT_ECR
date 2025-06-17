@@ -30,13 +30,12 @@ Retail_Rate_WD <- getwd()
 # ECR_Customer_Segment <- "Residential General Market" # "Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential"
 # Retail_Rate_Customer_Segment <- "No Discount" # "No Discount", "CARE", "FERA"
 # Utility_Name <- "PG&E" # "PG&E", "SCE", "SDG&E"
+# IX_App_Year <- 2025 # Final Interconnection Application Year 2023 . . . 2026
 # Rate_Season <- "Summer" # "Summer", "Winter", "Spring" (Note: "Spring" only applies to SDG&E)
 # Day_Type <- "Weekday" # "Weekday", "Weekend & Holiday"
 # ECR_Year <- 2025 # Simulation Year in Avoided Cost Calculator (not vintage of ACC spreadsheet) 2023 . . . 2052
-# IX_App_Year <- 2025 # Final Interconnection Application Year 2023 . . . 2026
 
-
-ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, Rate_Season, Day_Type, ECR_Year, IX_App_Year){
+ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, IX_App_Year, Rate_Season, Day_Type, ECR_Year){
   
   #### Input Mapping ####
   
@@ -342,9 +341,8 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
 
 # ECR_Customer_Segments <- c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential")
 # Utility_Names <- c("PG&E", "SCE", "SDG&E")
-# Day_Types <- c("Weekday", "Weekend & Holiday")
-# ECR_Years <- seq(2023, 2052)
 # IX_App_Years <- seq(2023, 2026)
+# Day_Types <- c("Weekday", "Weekend & Holiday")
 
 for(ECR_Customer_Segment in ECR_Customer_Segments){
   
@@ -360,14 +358,24 @@ for(ECR_Customer_Segment in ECR_Customer_Segments){
     
     for(Utility_Name in Utility_Names){
       
-      Rate_Seasons <- if(Utility_Name == "SDG&E") c("Summer", "Winter", "Spring") else c("Summer", "Winter")
-      
-      for(Rate_Season in Rate_Seasons){
-        for(Day_Type in Day_Types){
-          for(ECR_Year in ECR_Years){
+      for(IX_App_Year in IX_App_Years){
+        
+        Rate_Seasons <- if(Utility_Name == "SDG&E") c("Summer", "Winter", "Spring") else c("Summer", "Winter")
+        
+        for(Rate_Season in Rate_Seasons){
+          for(Day_Type in Day_Types){
             
-            ECR_Plot(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, Rate_Season, Day_Type, ECR_Year, IX_App_Year)
+            if(IX_App_Year %in% c(2023, 2024)){
+              ECR_Years <- seq(IX_App_Year, 2052) # 2022 ACC includes 2023-2052. ECR Year should always be >= IX App Year.
+            }else if(IX_App_Year %in% c(2025, 2026)){
+              ECR_Years <- seq(IX_App_Year, 2054) # 2024 ACC includes 2024-2054. ECR Year should always be >= IX App Year.
+            }
             
+            for(ECR_Year in ECR_Years){
+              
+              ECR_Plot(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, IX_App_Year, Rate_Season, Day_Type, ECR_Year)
+              
+            }
           }
         }
       }
