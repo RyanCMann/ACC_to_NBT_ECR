@@ -27,15 +27,16 @@ Retail_Rate_WD <- getwd()
 
 #### User Inputs for Single Plot ####
 
-# Customer_Segment <- "Residential General Market" # "Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential"
+# ECR_Customer_Segment <- "Residential General Market" # "Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party", "Non-Residential"
+# Retail_Rate_Customer_Segment <- "No Discount" # "No Discount", "CARE", "FERA"
 # Utility_Name <- "PG&E" # "PG&E", "SCE", "SDG&E"
 # Rate_Season <- "Summer" # "Summer", "Winter", "Spring" (Note: "Spring" only applies to SDG&E)
 # Day_Type <- "Weekday" # "Weekday", "Weekend & Holiday"
-# ACC_Year <- 2025 # Simulation Year in Avoided Cost Calculator (not vintage of ACC spreadsheet) 2023 . . . 2052
+# ECR_Year <- 2025 # Simulation Year in Avoided Cost Calculator (not vintage of ACC spreadsheet) 2023 . . . 2052
 # IX_App_Year <- 2025 # Final Interconnection Application Year 2023 . . . 2026
 
 
-ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_Year){
+ECR_Plot <- function(ECR_Customer_Segment, Utility_Name, Rate_Season, Day_Type, ECR_Year){
   
   #### Input Mapping ####
   
@@ -75,7 +76,7 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
     gather(key = "IX.App.Year", value = "Adder", X2023:X2030) %>%
     mutate(IX.App.Year = gsub("X", "", IX.App.Year)) %>%
     filter(Utility_Name == Utility,
-           Customer.Segment == Customer_Segment,
+           Customer.Segment == ECR_Customer_Segment,
            IX.App.Year == as.character(IX_App_Year))
   
   ACC_Plus_Adder <- ACC_Plus_Adders$Adder
@@ -121,7 +122,7 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
   # Filter to ACC Year and Day-type,
   # convert remaining columns to plot-ready format
   Export_Compensation_Rates <- Export_Compensation_Rates %>%
-    filter(year(DateStart) == ACC_Year) %>%
+    filter(year(DateStart) == ECR_Year) %>%
     mutate(DayType = ifelse(DayTypeStart == 6 & DayTypeEnd == 8, "Weekend & Holiday", "Weekday")) %>%
     filter(DayType == Day_Type) %>%
     mutate(Hour_Beginning = as.numeric(str_sub(TimeStart, 1, 2))) %>%
@@ -145,10 +146,9 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
   # so that post-2023 Export Compensation Rates
   # can be compared to estimated post-2023 retail rate values.
   
-  # Did not plot retail rates for Residential Low-Income customer segment
-  # because some low-income customers are receiving the CARE discount,
-  # some are receiving the FERA discount,
-  # and some are not receiving either discount.
+  # It's worth noting that there are some customers who are classified as low-income
+  # with respect to the Net Billing Tariff ACC Plus Adder,
+  # but who do not receive either the CARE or FERA discount on their retail rates.
   # "For purposes of the net billing tariff, 
   # low-income customers are defined as one or more of the following:
   # (i) residential customers enrolled in California Alternate Rates for Energy
@@ -193,15 +193,35 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
     
   }
   
+  
+  #### Apply Low-Income Discount to Retail Rates ####
+  
+  # Load Discount Data
+  Low_Income_Discounts <- read.csv(file.path(Retail_Rate_WD,
+                                             "Low-Income Discounts",
+                                             "Low Income Discount Percentages.csv"))
+  
+  # Get discount rate from the low-income discount data
+  discount_data <- Low_Income_Discounts %>%
+    filter(Utility == Utility_Name,
+           Discount.Program == Retail_Rate_Customer_Segment)
+  
+  discount_rate <- discount_data$Discount.Rate[1]
+  
+  # Apply Discount
+  Retail_Rates_With_Discount <- Retail_Rates %>%
+    mutate(Retail_Rate = Retail_Rate * (1 - discount_rate))
+  
+  
   # Save maximum retail rate value to be used to set plot y-axis upper limit.
-  Retail_Rates <- Retail_Rates %>%
+  Retail_Rates_With_Discount <- Retail_Rates_With_Discount %>%
     filter(month.abb[Month] %in% unique(Export_Compensation_Rates$Month)) %>%
     rename(Rate = Retail_Rate)
   
-  Max_Retail_Rate <- max(Retail_Rates$Rate)
+  Max_Retail_Rate <- max(Retail_Rates_With_Discount$Rate)
   
   
-  if(ACC_Year == 2025 && Customer_Segment == "Residential General Market"){
+  if(ECR_Year == 2025 && ECR_Customer_Segment %in% c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party")){
     
     Retail_Rate_Overlay <- TRUE
     
@@ -210,7 +230,7 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
     # so the average is being taken across identical values.
     # Make the retail rate name the first month of the year
     # (before Jan) so that it shows up first on plot legend.
-    Retail_Rates <- Retail_Rates %>%
+    Retail_Rates_With_Discount <- Retail_Rates_With_Discount %>%
       filter(DayType == Day_Type) %>%
       group_by(DayType, Hour_Beginning) %>% 
       summarize(Rate = mean(Rate)) %>% 
@@ -218,14 +238,14 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
       mutate(Month = factor(Retail_Rate_Name, levels = c(Retail_Rate_Name, month.abb))) %>%
       select(Month, DayType, Hour_Beginning, Rate)
     
-    Export_Compensation_Rates <- rbind(Retail_Rates,
+    Export_Compensation_Rates <- rbind(Retail_Rates_With_Discount,
                                        Export_Compensation_Rates)
     
   }else{
     Retail_Rate_Overlay <- FALSE
   }
   
-  rm(Retail_Rates, Retail_Rate_Name)
+  rm(Retail_Rates, Retail_Rate_Name, Retail_Rates_With_Discount)
   
   
   # Calculate Y-Axis Upper Limit
@@ -241,18 +261,37 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
   
   ##### Plot Export Compensation Rates ####
   
-  Plot_Title <- paste(Customer_Segment, Utility_Name, Rate_Season, 
-                      Day_Type, ACC_Year, "Export Compensation Rate Comparison")
+  Plot_Title <- paste(ECR_Customer_Segment,
+                      Retail_Rate_Customer_Segment,
+                      Utility_Name,
+                      paste0("IX", IX_App_Year),
+                      Rate_Season, 
+                      Day_Type,
+                      ECR_Year,
+                      "Export Compensation Rate Comparison")
   
-  Plot_Filepath <- file.path(Code_WD, Customer_Segment, Utility_Name, 
-                             Rate_Season, Day_Type)
+  # Optional - abbreviations and acronyms for shorter plot titles
+  # Plot_Title <- gsub("Residential", "Resi", Plot_Title)
+  Plot_Title <- gsub("No Discount ", "", Plot_Title)
+  # Plot_Title <- gsub("General Market", "GM", Plot_Title)
+  # Plot_Title <- gsub("Low-Income", "LI", Plot_Title)
+  # Plot_Title <- gsub("New Home/Change of Party", "NH/CoP", Plot_Title)
+  # Plot_Title <- gsub("Export Compensation Rate", "ECR", Plot_Title)
+  
+  Plot_Filepath <- file.path(Code_WD,
+                             ECR_Customer_Segment,
+                             Retail_Rate_Customer_Segment,
+                             Utility_Name,
+                             paste0("IX", IX_App_Year),
+                             Rate_Season,
+                             Day_Type)
   
   # Create folders if one does not exist already
   if(!dir.exists(Plot_Filepath)){
     dir.create(Plot_Filepath, recursive = TRUE)
   }
   
-  rm(Utility_Name, ACC_Year, Customer_Segment, Rate_Season, Day_Type)
+  rm(Utility_Name, ECR_Year, ECR_Customer_Segment, Rate_Season, Day_Type)
   
   ECR_Plot_Object <- ggplot(Export_Compensation_Rates) +
     geom_step(aes(x = Hour_Beginning, y = Rate,
@@ -300,21 +339,21 @@ ECR_Plot <- function(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_
 
 #### Iterate Through All Inputs ####
 
-Customer_Segments <- c("Residential General Market", "Residential Low-Income", "Non-Residential")
+ECR_Customer_Segments <- c("Residential General Market", "Residential Low-Income", "Non-Residential")
 Utility_Names <- c("PG&E", "SCE", "SDG&E")
 Day_Types <- c("Weekday", "Weekend & Holiday")
-ACC_Years <- seq(2023, 2052)
+ECR_Years <- seq(2023, 2052)
 
-for(Customer_Segment in Customer_Segments){
+for(ECR_Customer_Segment in ECR_Customer_Segments){
   for(Utility_Name in Utility_Names){
     
     Rate_Seasons <- if(Utility_Name == "SDG&E") c("Summer", "Winter", "Spring") else c("Summer", "Winter")
     
     for(Rate_Season in Rate_Seasons){
       for(Day_Type in Day_Types){
-        for(ACC_Year in ACC_Years){
+        for(ECR_Year in ECR_Years){
           
-          ECR_Plot(Customer_Segment, Utility_Name, Rate_Season, Day_Type, ACC_Year)
+          ECR_Plot(ECR_Customer_Segment, Utility_Name, Rate_Season, Day_Type, ECR_Year)
           
         }
       }
