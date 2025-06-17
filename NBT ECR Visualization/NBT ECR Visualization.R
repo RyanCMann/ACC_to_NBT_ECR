@@ -33,7 +33,7 @@ Retail_Rate_WD <- getwd()
 # IX_App_Year <- 2025 # Final Interconnection Application Year 2023 . . . 2026
 # Rate_Season <- "Summer" # "Summer", "Winter", "Spring" (Note: "Spring" only applies to SDG&E)
 # Day_Type <- "Weekday" # "Weekday", "Weekend & Holiday"
-# ECR_Year <- 2025 # Simulation Year in Avoided Cost Calculator (not vintage of ACC spreadsheet) 2023 . . . 2052
+# ECR_Year <- 2025 # Simulation Year in Avoided Cost Calculator (not vintage of ACC spreadsheet) 2023 . . . 2054
 
 ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, IX_App_Year, Rate_Season, Day_Type, ECR_Year){
   
@@ -131,19 +131,20 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
   
   
   #### Convert Retail Rates to plot-ready format ####
-  # Note: only including retail rate comparison for 2023 ACC Year,
-  # and for Residential General Market customer segment.
-  # Retail rate data is still loaded for ACC Years beyond 2023,
+  # Note: only including retail rate comparison for 2025 ACC Year,
+  # and for the residential Export Compensation Rate customer segments
+  # (including low-income segments receiving discounted retail rates).
+  # Retail rate data is still loaded for ACC Years beyond 2025,
   # because the maximum value is used to set the y-axis upper limit.
   
-  # Did not plot retail rates for post-2023 ACC years
+  # Did not plot retail rates for post-2025 ACC years
   # because future retail rate values are not available.
   # Alternative approach would be to apply a
   # 4 Percent average escalation of residential retail rates
   # https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M343/K979/343979448.docx
   # (pg. 13)
-  # so that post-2023 Export Compensation Rates
-  # can be compared to estimated post-2023 retail rate values.
+  # so that post-2025 Export Compensation Rates
+  # can be compared to estimated post-2025 retail rate values.
   
   # It's worth noting that there are some customers who are classified as low-income
   # with respect to the Net Billing Tariff ACC Plus Adder,
