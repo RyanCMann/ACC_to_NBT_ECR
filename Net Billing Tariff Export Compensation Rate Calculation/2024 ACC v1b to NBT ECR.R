@@ -187,7 +187,7 @@ for(Utility_Name_Iter in Utility_Names){
   # Methane Leakage
   
   # (See Attachment B (starting PDF pg. 55) of "SCE 4961-E NBT.pdf")
-  Delivery_ACC_Components <- c("TCap", "DCap", "GHGAdder", "GHGRebalance", "Methane")
+  Delivery_ACC_Components <- c("TCap", "DCap", "GHGAdder", "GHGRebalance", "Methane", "GHGAdder GHGRebalance") # 2024 ACC output combines GHGAdder and GHGRebalance.
   
   ACC_Delivery <- expand.grid(list(Date_Time = Date_Times_2018, 
                                    ACC_Year = ACC_Years)) %>%
@@ -203,7 +203,7 @@ for(Utility_Name_Iter in Utility_Names){
   # Avoided Ancillary Services Procurement
   
   # See Attachment B (starting PDF pg. 55) of "SCE 4961-E NBT.pdf".
-  Generation_ACC_Components <- c("Energy", "CapTrade", "GenCap", "Losses", "AS")
+  Generation_ACC_Components <- c("Energy", "CapTrade", "GenCap", "Losses", "AS", "Energy CapTrade Losses") # 2024 ACC output combines Energy, CapTrade, and Losses.
   
   ACC_Generation <- expand.grid(list(Date_Time = Date_Times_2018,
                                      ACC_Year = ACC_Years)) %>%
