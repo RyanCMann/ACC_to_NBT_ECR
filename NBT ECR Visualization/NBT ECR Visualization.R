@@ -130,7 +130,7 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
   rm(ACC_Plus_Adder, NBT_ECR_File)
   
   
-  #### Convert Retail Rates to plot-ready format ####
+  #### Load Retail Rates and Convert to Plot-Ready Format ####
   # Note: only including retail rate comparison for 2025 ACC Year,
   # and for the residential Export Compensation Rate customer segments
   # (including low-income segments receiving discounted retail rates).
@@ -163,34 +163,80 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
   # because there are a wide variety of different rate tariffs
   # for non-residential customers.
   
-  if(Utility_Name == "PG&E"){
-    Retail_Rates <- readRDS(file.path(Retail_Rate_WD,
-                                      "PG&E E-ELEC",
-                                      "2025",
-                                      "60-Minute Data",
-                                      "Dataframe Format",
-                                      "2025_PGE_E_ELEC_Cost_Dataframe.rds"))
-    Retail_Rate_Name <- "E-ELEC"
+  # Load the Retail Rate Library
+  Retail_Rate_Library <- read.csv(file.path(Retail_Rate_WD,
+                                            "Retail Rates",
+                                            "Retail Rate Library.csv"))
+  
+  # Filter for the specified parameters and CONSUMPTION charges only
+  Filtered_Rates <- Retail_Rate_Library %>%
+    filter(Delivery.Utility == Utility_Name, # TODO: For CCAs, switch to filtering on Delivery Utility and Generation Supplier and Rate Schedule
+           Rate.Season == Rate_Season,
+           Charge.Type == "CONSUMPTION") %>%
+    # Handle day type filtering - if Day.Type is empty, it applies to all days
+    filter(is.na(Day.Type) | Day.Type == "" | Day.Type == Day_Type)
+  
+  rm(Retail_Rate_Library)
+  
+  # Initialize hourly rates vector (24 hours, 0-23)
+  Hourly_Rates <- rep(NA, 24)
+  
+  # Process each TOU band
+  for(i in 1:nrow(Filtered_Rates)) {
+    from_hour <- Filtered_Rates$From.Hour[i]
+    to_hour <- Filtered_Rates$To.Hour[i]
+    rate <- Filtered_Rates$Total.Rate[i] # TODO: Preserve generation and delivery rate split during rate conversion process.
     
-  }else if(Utility_Name == "SCE"){
+    # Normalize 24 to 0 (both represent midnight)
+    if(!is.na(from_hour) && from_hour == 24) from_hour <- 0
+    if(!is.na(to_hour) && to_hour == 24) to_hour <- 0
     
-    Retail_Rates <- readRDS(file.path(Retail_Rate_WD,
-                                      "SCE TOU-D-PRIME",
-                                      "2025",
-                                      "60-Minute Data",
-                                      "Dataframe Format",
-                                      "2025_SCE_TOU_D_PRIME_Cost_Dataframe.rds"))
-    Retail_Rate_Name <- "TOU-D-PRIME"
+    # Generate sequence of hours for this band
+    if(is.na(from_hour) & is.na(to_hour)) {
+      # All hours case: both From Hour and To Hour are blank
+      hours <- 0:23
+    } else if(to_hour > from_hour) {
+      # Normal case: from_hour to to_hour-1
+      hours <- seq(from_hour, to_hour - 1)
+    } else if(to_hour < from_hour) {
+      # Wraparound case: from_hour to 23, then 0 to to_hour-1
+      if(to_hour == 0) {
+        # Special case: to_hour is 0, so only go from from_hour to 23
+        hours <- seq(from_hour, 23)
+      } else {
+        # Normal wraparound: from_hour to 23, then 0 to to_hour-1
+        hours <- c(seq(from_hour, 23), seq(0, to_hour - 1))
+      }
+    } else {
+      # Edge case: from_hour == to_hour (shouldn't occur)
+      hours <- integer(0)  # Empty vector
+      warning("This rate tariff includes a TOU band where the From Hour = To Hour. The TOU range is not inclusive of the To Hour, so the To Hour should be equal to the Hour Ending.")
+    }
     
-  }else if(Utility_Name == "SDG&E"){
-    Retail_Rates <- readRDS(file.path(Retail_Rate_WD,
-                                      "SDG&E EV-TOU-5",
-                                      "2025",
-                                      "60-Minute Data",
-                                      "Dataframe Format",
-                                      "2025_SDGE_EV_TOU_5_Cost_Dataframe.rds"))
-    Retail_Rate_Name <- "EV-TOU-5"
-    
+    # Assign rate to corresponding hours
+    for(hour in hours) {
+      Hourly_Rates[hour + 1] <- rate  # +1 because R uses 1-based indexing
+    }
+  }
+  
+  Retail_Rate_Name = Filtered_Rates$Rate.Schedule[1]
+  
+  rm(Filtered_Rates)
+  
+  # Create dataframe in format compatible with existing script
+  Retail_Rates <- data.frame(
+    Season = Rate_Season,
+    DayType = Day_Type,
+    Hour_Beginning = 0:23,
+    Retail_Rate = Hourly_Rates
+  )
+  
+  rm(Hourly_Rates)
+  
+  # Check for any missing rates (hours not covered by TOU bands)
+  if(any(is.na(Retail_Rates$Rate))) {
+    Missing_Hours <- which(is.na(Retail_Rates$Rate)) - 1  # Convert back to 0-based
+    warning(paste("Missing rates for hours:", paste(Missing_Hours, collapse = ", ")))
   }
   
   
@@ -210,15 +256,16 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
   
   # Apply Discount
   Retail_Rates_With_Discount <- Retail_Rates %>%
-    mutate(Retail_Rate = Retail_Rate * (1 - discount_rate))
+    mutate(Retail_Rate = Retail_Rate * (1 - discount_rate)) # TODO: Apply discount rate to generation and delivery rates separately.
   
   
   # Save maximum retail rate value to be used to set plot y-axis upper limit.
   Retail_Rates_With_Discount <- Retail_Rates_With_Discount %>%
-    filter(month.abb[Month] %in% unique(Export_Compensation_Rates$Month)) %>%
     rename(Rate = Retail_Rate)
   
   Max_Retail_Rate <- max(Retail_Rates_With_Discount$Rate)
+  
+  rm(Low_Income_Discounts, discount_data)
   
   
   if(ECR_Year == 2025 && ECR_Customer_Segment %in% c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party")){
@@ -231,10 +278,6 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
     # Make the retail rate name the first month of the year
     # (before Jan) so that it shows up first on plot legend.
     Retail_Rates_With_Discount <- Retail_Rates_With_Discount %>%
-      filter(DayType == Day_Type) %>%
-      group_by(DayType, Hour_Beginning) %>% 
-      summarize(Rate = mean(Rate)) %>% 
-      ungroup() %>%
       mutate(Month = factor(Retail_Rate_Name, levels = c(Retail_Rate_Name, month.abb))) %>%
       select(Month, DayType, Hour_Beginning, Rate)
     
