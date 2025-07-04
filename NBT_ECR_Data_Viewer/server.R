@@ -274,6 +274,7 @@ shinyServer(function(input, output, session) {
   # because there are a wide variety of different rate tariffs
   # for non-residential customers.
   
+  # Determine Retail Rate Overlay Status
   Retail_Rate_Overlay <- reactive({
     req(input$ECR_Year_Choose)
     req(input$ECR_Customer_Segment_Choose)
@@ -286,32 +287,82 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  # Load Retail Rates, Filter to Rate Season
-  Retail_Rates_Raw <- reactive({
+  # Load Retail Rate Library
+  Retail_Rate_Library <- reactive({
+    read.csv("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/refs/heads/main/Retail%20Rate%20Creation/Retail%20Rates/Retail%20Rate%20Library.csv")
+  })
+  
+  # Filter to Selected Retail Rate and Season, Convert from Bands Format to Hourly Rates Vector
+  Retail_Rates_Hourly <- reactive({
     
     req(input$Utility_Name_Choose)
+    req(input$Rate_Season_Choose)
+    req(input$Day_Type_Choose)
     
-    if(input$Utility_Name_Choose == "PG&E"){
-      read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                      "Retail%20Rate%20Creation/PG%26E%20E-ELEC/2025/60-Minute%20Data/Dataframe%20Format/",
-                      "2025_PGE_E_ELEC_Cost_Dataframe.csv")) %>%
-        filter(month.abb[Month] %in% unique(Fully_Filtered_Export_Compensation_Rates()$Month)) %>%
-        rename(Rate = Retail_Rate)
+    # Filter for the specified parameters and CONSUMPTION charges only
+    Filtered_Rates <- Retail_Rate_Library() %>%
+      filter(Delivery.Utility == input$Utility_Name_Choose, # TODO: For CCAs, switch to filtering on Delivery Utility and Generation Supplier and Rate Schedule
+             Rate.Season == input$Rate_Season_Choose,
+             Charge.Type == "CONSUMPTION") %>%
+      # Handle day type filtering - if Day.Type is empty, it applies to all days
+      filter(is.na(Day.Type) | Day.Type == "" | Day.Type == input$Day_Type_Choose)
+    
+    # Initialize hourly rates vector (24 hours, 0-23)
+    Hourly_Rates <- rep(NA, 24)
+    
+    # Process each TOU band
+    for(i in 1:nrow(Filtered_Rates)) {
+      from_hour <- Filtered_Rates$From.Hour[i]
+      to_hour <- Filtered_Rates$To.Hour[i]
+      rate <- Filtered_Rates$Total.Rate[i] # TODO: Preserve generation and delivery rate split during rate conversion process.
       
-    } else if(input$Utility_Name_Choose == "SCE"){
-      read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                      "Retail%20Rate%20Creation/SCE%20TOU-D-PRIME/2025/60-Minute%20Data/Dataframe%20Format/",
-                      "2025_SCE_TOU_D_PRIME_Cost_Dataframe.csv")) %>%
-        filter(month.abb[Month] %in% unique(Fully_Filtered_Export_Compensation_Rates()$Month)) %>%
-        rename(Rate = Retail_Rate)
+      # Normalize 24 to 0 (both represent midnight)
+      if(!is.na(from_hour) && from_hour == 24) from_hour <- 0
+      if(!is.na(to_hour) && to_hour == 24) to_hour <- 0
       
-    } else if(input$Utility_Name_Choose == "SDG&E"){
-      read.csv(paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                      "Retail%20Rate%20Creation/SDG%26E%20EV-TOU-5/2025/60-Minute%20Data/Dataframe%20Format/",
-                      "2025_SDGE_EV_TOU_5_Cost_Dataframe.csv")) %>%
-        filter(month.abb[Month] %in% unique(Fully_Filtered_Export_Compensation_Rates()$Month)) %>%
-        rename(Rate = Retail_Rate)
+      # Generate sequence of hours for this band
+      if(is.na(from_hour) & is.na(to_hour)) {
+        # All hours case: both From Hour and To Hour are blank
+        hours <- 0:23
+      } else if(to_hour > from_hour) {
+        # Normal case: from_hour to to_hour-1
+        hours <- seq(from_hour, to_hour - 1)
+      } else if(to_hour < from_hour) {
+        # Wraparound case: from_hour to 23, then 0 to to_hour-1
+        if(to_hour == 0) {
+          # Special case: to_hour is 0, so only go from from_hour to 23
+          hours <- seq(from_hour, 23)
+        } else {
+          # Normal wraparound: from_hour to 23, then 0 to to_hour-1
+          hours <- c(seq(from_hour, 23), seq(0, to_hour - 1))
+        }
+      } else {
+        # Edge case: from_hour == to_hour (shouldn't occur)
+        hours <- integer(0)  # Empty vector
+        warning("This rate tariff includes a TOU band where the From Hour = To Hour. The TOU range is not inclusive of the To Hour, so the To Hour should be equal to the Hour Ending.")
+      }
+      
+      # Assign rate to corresponding hours
+      for(hour in hours) {
+        Hourly_Rates[hour + 1] <- rate  # +1 because R uses 1-based indexing
+      }
     }
+    
+    # Create dataframe in format compatible with existing script
+    Retail_Rates <- data.frame(
+      Season = input$Rate_Season_Choose,
+      DayType = input$Day_Type_Choose,
+      Hour_Beginning = 0:23,
+      Retail_Rate = Hourly_Rates
+    )
+    
+    # Check for any missing rates (hours not covered by TOU bands)
+    if(any(is.na(Retail_Rates$Retail_Rate))) {
+      Missing_Hours <- which(is.na(Retail_Rates$Retail_Rate)) - 1  # Convert back to 0-based
+      warning(paste("Missing rates for hours:", paste(Missing_Hours, collapse = ", ")))
+    }
+    
+    return(Retail_Rates)
     
   })
   
@@ -321,25 +372,26 @@ shinyServer(function(input, output, session) {
     read.csv("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/refs/heads/main/Retail%20Rate%20Creation/Low-Income%20Discounts/Low%20Income%20Discount%20Percentages.csv")
   })
   
-  # Apply low-income discount to retail rates
+  #### Apply Low-Income Discount to Retail Rates ####
   Retail_Rates_With_Discount <- reactive({
+    
     req(input$Utility_Name_Choose)
     req(input$Retail_Rate_Customer_Segment_Choose)
-    
-    base_rates <- Retail_Rates_Raw()
-    
+
     # Get discount rate from the low-income discount data
     discount_data <- Low_Income_Discounts() %>%
       filter(Utility == input$Utility_Name_Choose,
              Discount.Program == input$Retail_Rate_Customer_Segment_Choose)
     
-    if(nrow(discount_data) > 0) {
-      discount_rate <- discount_data$Discount.Rate[1]
-      base_rates <- base_rates %>%
-        mutate(Rate = Rate * (1 - discount_rate))
-    }
+    discount_rate <- if(nrow(discount_data) > 0) discount_data$Discount.Rate[1] else 0
     
-    return(base_rates)
+    # Apply Discount
+    Retail_Rates_With_Discount <- Retail_Rates_Hourly() %>%
+      mutate(Retail_Rate = Retail_Rate * (1 - discount_rate)) %>%
+      rename(Rate = Retail_Rate)
+    
+    return(Retail_Rates_With_Discount)
+    
   })
   
   # Get Retail Rate Name for Plot Legend
@@ -365,16 +417,9 @@ shinyServer(function(input, output, session) {
     
     req(input$Day_Type_Choose)
     
-    # Retail rates are the same every day
-    # for all days in a given season and Day-Type,
-    # so the average is being taken across identical values.
     # Make the retail rate name the first month of the year
     # (before Jan) so that it shows up first on plot legend.
     Retail_Rates_With_Discount() %>%
-      filter(DayType == input$Day_Type_Choose) %>%
-      group_by(DayType, Hour_Beginning) %>% 
-      summarize(Rate = mean(Rate)) %>% 
-      ungroup() %>%
       mutate(Month = factor(Retail_Rate_Name(), levels = c(Retail_Rate_Name(), month.abb))) %>%
       select(Month, DayType, Hour_Beginning, Rate)
     
