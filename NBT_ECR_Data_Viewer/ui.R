@@ -24,6 +24,8 @@ shinyUI(fluidPage(
 
       uiOutput("ECR_Year_List"),
       
+      uiOutput("Rate_Components_List"),
+      
       downloadButton("downloadData", label = "Download NBT ECR in CEC MIDAS TOU Format")
     ),
     

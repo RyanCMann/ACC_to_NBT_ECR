@@ -67,6 +67,11 @@ shinyServer(function(input, output, session) {
     ECR_Year_List <- seq(2023, 2054)
     selectizeInput("ECR_Year_Choose", "Export Compensation Rate Year:", choices = ECR_Year_List, selected = 2025)
   })
+  
+  output$Rate_Components_List <- renderUI({
+    Rate_Components_List <- c("All Components", "Delivery Only", "Generation Only")
+    selectizeInput("Rate_Components_Choose", "Rate Components:", Rate_Components_List, selected = "All Components")
+  })
 
   
   
@@ -81,6 +86,7 @@ shinyServer(function(input, output, session) {
     req(input$ECR_Customer_Segment_Choose)
     req(input$Utility_Name_Choose)
     req(input$IX_App_Year_Choose)
+    req(input$Rate_Components_Choose)
     
     ACC_Plus_Adders_Filtered <- ACC_Plus_Adders %>%
       filter(Customer.Segment == input$ECR_Customer_Segment_Choose,
@@ -105,21 +111,25 @@ shinyServer(function(input, output, session) {
       ACC_Vintage <- 2024
     }
     
+    # Map Rate_Components to URL component
+    if(input$Rate_Components_Choose == "All Components"){
+      URL_Component <- "Bundled"
+    } else if(input$Rate_Components_Choose == "Delivery Only"){
+      URL_Component <- "Unbundled%20Delivery"
+    } else if(input$Rate_Components_Choose == "Generation Only"){
+      URL_Component <- "Unbundled%20Generation"
+    }
+    
+    URL_Utility <- gsub("&", "%26", input$Utility_Name_Choose)
+    
     NBT_ECRs_Directory <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
                                  "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/", ACC_Vintage, "%20ACC%20NBT%20ECRs/")
     
-    if(input$Utility_Name_Choose == "PG&E"){
-      read.csv(paste0(NBT_ECRs_Directory, "PG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
-        mutate(Value = Value + ACC_Plus_Adder())
-      
-    } else if(input$Utility_Name_Choose == "SCE"){
-      read.csv(paste0(NBT_ECRs_Directory, "SCE%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
-        mutate(Value = Value + ACC_Plus_Adder())
-      
-    } else if(input$Utility_Name_Choose == "SDG&E"){
-      read.csv(paste0(NBT_ECRs_Directory, "SDG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")) %>%
-        mutate(Value = Value + ACC_Plus_Adder())
-    }
+    NBT_ECR_File <- paste0(NBT_ECRs_Directory, URL_Utility,
+                           "%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20", URL_Component, ".csv")
+    
+    read.csv(NBT_ECR_File) %>%
+      mutate(Value = Value + ACC_Plus_Adder())
     
   })
   
@@ -278,6 +288,7 @@ shinyServer(function(input, output, session) {
   Retail_Rate_Overlay <- reactive({
     req(input$ECR_Year_Choose)
     req(input$ECR_Customer_Segment_Choose)
+    req(input$Rate_Components_Choose)
     # Show retail rates for 2025 and residential customer segments
     if(input$ECR_Year_Choose == 2025 && 
        input$ECR_Customer_Segment_Choose %in% c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party")){
@@ -314,7 +325,15 @@ shinyServer(function(input, output, session) {
     for(i in 1:nrow(Filtered_Rates)) {
       from_hour <- Filtered_Rates$From.Hour[i]
       to_hour <- Filtered_Rates$To.Hour[i]
-      rate <- Filtered_Rates$Total.Rate[i] # TODO: Preserve generation and delivery rate split during rate conversion process.
+      
+      # Select appropriate rate based on Rate_Components parameter
+      if(input$Rate_Components_Choose == "All Components"){
+        rate <- Filtered_Rates$Total.Rate[i]
+      } else if(input$Rate_Components_Choose == "Delivery Only"){
+        rate <- Filtered_Rates$Delivery.Rate[i]
+      } else if(input$Rate_Components_Choose == "Generation Only"){
+        rate <- Filtered_Rates$Generation.Rate[i]
+      }
       
       # Normalize 24 to 0 (both represent midnight)
       if(!is.na(from_hour) && from_hour == 24) from_hour <- 0
@@ -466,7 +485,8 @@ shinyServer(function(input, output, session) {
                         input$Rate_Season_Choose,
                         input$Day_Type_Choose,
                         input$ECR_Year_Choose,
-                        "ECR Comparison")
+                        "ECR Comparison -",
+                        input$Rate_Components_Choose)
     
     Plot_Title <- gsub("Residential", "Resi", Plot_Title)
     Plot_Title <- gsub("No Discount ", "", Plot_Title)
@@ -522,7 +542,8 @@ shinyServer(function(input, output, session) {
     filename = function() {
       paste(input$ECR_Customer_Segment_Choose,
             input$Utility_Name_Choose,
-            "Net Billing Tariff Export Compensation Rates.csv")
+            input$Rate_Components_Choose,
+            "NBT Export Compensation Rates.csv")
     },
     content = function(file) {
       write.csv(Export_Compensation_Rates(), file, row.names = FALSE)
