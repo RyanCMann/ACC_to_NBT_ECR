@@ -34,8 +34,9 @@ Retail_Rate_WD <- getwd()
 # Rate_Season <- "Summer" # "Summer", "Winter", "Spring" (Note: "Spring" only applies to SDG&E)
 # Day_Type <- "Weekday" # "Weekday", "Weekend & Holiday"
 # ECR_Year <- 2025 # Simulation Year in Avoided Cost Calculator (not vintage of ACC spreadsheet) 2023 . . . 2054
+# Rate_Components <- "All Components" # "All Components", "Delivery Only", "Generation Only"
 
-ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, IX_App_Year, Rate_Season, Day_Type, ECR_Year){
+ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, IX_App_Year, Rate_Season, Day_Type, ECR_Year, Rate_Components){
   
   #### Input Mapping ####
   
@@ -45,24 +46,30 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
     ACC_Vintage = 2024
   }
   
+  # Map Rate_Components to URL component
+  if(Rate_Components == "All Components"){
+    URL_Component <- "Bundled"
+  } else if(Rate_Components == "Delivery Only"){
+    URL_Component <- "Unbundled%20Delivery"
+  } else if(Rate_Components == "Generation Only"){
+    URL_Component <- "Unbundled%20Generation"
+  }
+  
+  URL_Utility <- gsub("&", "%26", Utility_Name)
+  
+  NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
+                         "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/", ACC_Vintage, "%20ACC%20NBT%20ECRs/", URL_Utility,
+                         "%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20", URL_Component, ".csv")
+  
   if(Utility_Name == "PG&E"){
-    NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/", ACC_Vintage, "%20ACC%20NBT%20ECRs/",
-                           "PG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")
     Winter_Months <- c("Jan", "Feb", "Mar", "Apr", "May", "Oct", "Nov", "Dec")
     Spring_Months <- NA
     Summer_Months <- c("Jun", "Jul", "Aug", "Sep")
   } else if(Utility_Name == "SCE"){
-    NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/", ACC_Vintage, "%20ACC%20NBT%20ECRs/",
-                           "SCE%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")
     Winter_Months <- c("Jan", "Feb", "Mar", "Apr", "May", "Oct", "Nov", "Dec")
     Spring_Months <- NA
     Summer_Months = c("Jun", "Jul", "Aug", "Sep")
   } else if(Utility_Name == "SDG&E"){
-    NBT_ECR_File <- paste0("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/main/",
-                           "Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20Calculation/", ACC_Vintage, "%20ACC%20NBT%20ECRs/",
-                           "SDG%26E%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20Bundled.csv")
     Winter_Months <- c("Jan", "Feb", "May", "Nov", "Dec")
     Spring_Months <- c("Mar", "Apr")
     Summer_Months <- c("Jun", "Jul", "Aug", "Sep", "Oct")
@@ -185,7 +192,16 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
   for(i in 1:nrow(Filtered_Rates)) {
     from_hour <- Filtered_Rates$From.Hour[i]
     to_hour <- Filtered_Rates$To.Hour[i]
-    rate <- Filtered_Rates$Total.Rate[i] # TODO: Preserve generation and delivery rate split during rate conversion process.
+
+    # Select appropriate rate based on Rate_Components parameter
+    if(Rate_Components == "All Components"){
+      rate <- Filtered_Rates$Total.Rate[i]
+    } else if(Rate_Components == "Delivery Only"){
+      rate <- Filtered_Rates$Delivery.Rate[i]
+    } else if(Rate_Components == "Generation Only"){
+      rate <- Filtered_Rates$Generation.Rate[i]
+    }
+    
     
     # Normalize 24 to 0 (both represent midnight)
     if(!is.na(from_hour) && from_hour == 24) from_hour <- 0
@@ -256,7 +272,7 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
   
   # Apply Discount
   Retail_Rates_With_Discount <- Retail_Rates %>%
-    mutate(Retail_Rate = Retail_Rate * (1 - discount_rate)) # TODO: Apply discount rate to generation and delivery rates separately.
+    mutate(Retail_Rate = Retail_Rate * (1 - discount_rate))
   
   
   # Save maximum retail rate value to be used to set plot y-axis upper limit.
@@ -311,15 +327,16 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
                       Rate_Season, 
                       Day_Type,
                       ECR_Year,
-                      "Export Compensation Rate Comparison")
+                      "Export Compensation Rate Comparison - ",
+                      Rate_Components)
   
   # Optional - abbreviations and acronyms for shorter plot titles
-  # Plot_Title <- gsub("Residential", "Resi", Plot_Title)
+  Plot_Title <- gsub("Residential", "Resi", Plot_Title)
   Plot_Title <- gsub("No Discount ", "", Plot_Title)
-  # Plot_Title <- gsub("General Market", "GM", Plot_Title)
-  # Plot_Title <- gsub("Low-Income", "LI", Plot_Title)
-  # Plot_Title <- gsub("New Home/Change of Party", "NH/CoP", Plot_Title)
-  # Plot_Title <- gsub("Export Compensation Rate", "ECR", Plot_Title)
+  Plot_Title <- gsub("General Market", "GM", Plot_Title)
+  Plot_Title <- gsub("Low-Income", "LI", Plot_Title)
+  Plot_Title <- gsub("New Home/Change of Party", "NH/CoP", Plot_Title)
+  Plot_Title <- gsub("Export Compensation Rate", "ECR", Plot_Title)
   
   Plot_Filepath <- file.path(Code_WD,
                              ECR_Customer_Segment,
@@ -327,7 +344,8 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
                              Utility_Name,
                              paste0("IX", IX_App_Year),
                              Rate_Season,
-                             Day_Type)
+                             Day_Type,
+                             Rate_Components)
   
   # Create folders if one does not exist already
   if(!dir.exists(Plot_Filepath)){
@@ -387,6 +405,7 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
 # Utility_Names <- c("PG&E", "SCE", "SDG&E")
 # IX_App_Years <- seq(2023, 2026)
 # Day_Types <- c("Weekday", "Weekend & Holiday")
+# Rate_Components_Options <- c("All Components", "Delivery Only", "Generation Only")
 
 for(ECR_Customer_Segment in ECR_Customer_Segments){
   
@@ -417,7 +436,11 @@ for(ECR_Customer_Segment in ECR_Customer_Segments){
             
             for(ECR_Year in ECR_Years){
               
-              ECR_Plot(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, IX_App_Year, Rate_Season, Day_Type, ECR_Year)
+              for(Rate_Components in Rate_Components_Options){
+                
+                ECR_Plot(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility_Name, IX_App_Year, Rate_Season, Day_Type, ECR_Year, Rate_Components)
+                
+              }
               
             }
           }
