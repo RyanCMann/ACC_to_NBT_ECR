@@ -554,8 +554,8 @@ shinyServer(function(input, output, session) {
       charge_period <- fixed_charge_data$Charge.Period[1]
       charge_period <- gsub("DAILY", "day", charge_period)
       charge_period <- gsub("MONTHLY", "month", charge_period)
-      formatted_amount <- paste0("$", format(charge_amount, nsmall = 0, trim = TRUE))
-      paste0("<b>Fixed Charge:</b> ", formatted_amount, "/", charge_period)
+      formatted_Fixed_Charge <- paste0("$", format(charge_amount, nsmall = 0, trim = TRUE))
+      paste0("<b>Fixed Charge:</b> ", formatted_Fixed_Charge, "/", charge_period)
     }
   })
   
@@ -570,6 +570,26 @@ shinyServer(function(input, output, session) {
   })
   
 
+  #### Load and Display Net Surplus Compensation Rate ####
+  Net_Surplus_Compensation_Rates <- reactive({
+    read.csv("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/refs/heads/main/NBT%20ECR%20Visualization/Net%20Surplus%20Compensation%20Rate%20by%20Generation%20Supplier.csv")
+  })
+  
+  output$NSC_Rate_Display <- renderText({
+    req(input$Utility_Name_Choose)
+    
+    # Filter for selected utility (Generation Supplier)
+    nsc_data <- Net_Surplus_Compensation_Rates() %>%
+      filter(Generation.Supplier == input$Utility_Name_Choose) # TODO: After adding CCAs, Utility Name input will be split into Delivery Utility and Generation Supplier.
+    
+    if(nrow(nsc_data) > 0) {
+      nsc_rate <- nsc_data$NSC.Rate[1]
+      formatted_NSC_Rate <- paste0("$", format(nsc_rate, nsmall = 0, trim = TRUE))
+      paste0("<b>Net Surplus Compensation Rate:</b> ", formatted_NSC_Rate, " per kWh")
+    }
+  })
+  
+  
   #### Download Non-Filtered ECR Data as CSV ####
   # Includes only one utility, customer segment, and final interconnection application year,
   # but includes all rate seasons, day-types, and ACC years.
