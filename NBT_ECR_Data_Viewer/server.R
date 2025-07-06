@@ -541,9 +541,10 @@ shinyServer(function(input, output, session) {
   #### Display ACC Plus Adder Value ####
   output$ACC_Plus_Adder_Display <- renderText({
     req(ACC_Plus_Adder())
-    paste("<b>ACC Plus Adder:</b>", 
-          scales::dollar(ACC_Plus_Adder(), accuracy = 0.001), 
-          "per kWh")
+    formatted_ACC_Plus_Adder <- paste0("$", format(ACC_Plus_Adder(), nsmall = 0, trim = TRUE))
+    paste0("<b>ACC Plus Adder:</b> ", 
+          formatted_ACC_Plus_Adder, 
+          "/kWh")
   })
   
   # Make the text output larger
