@@ -550,6 +550,28 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "ACC_Plus_Adder_Display", suspendWhenHidden = FALSE)
   
   
+  #### Display Fixed Charge ####
+  output$Fixed_Charge_Display <- renderText({
+    req(input$Utility_Name_Choose)
+    
+    # Get the rate schedule based on utility
+    rate_schedule <- Retail_Rate_Name()
+    
+    # Filter for fixed charges
+    fixed_charge_data <- Retail_Rate_Library() %>%
+      filter(Rate.Schedule == rate_schedule, Charge.Type == "FIXED")
+    
+    if(nrow(fixed_charge_data) > 0) {
+      charge_amount <- fixed_charge_data$Total.Rate[1]
+      charge_period <- fixed_charge_data$Charge.Period[1]
+      charge_period <- gsub("DAILY", "day", charge_period)
+      charge_period <- gsub("MONTHLY", "month", charge_period)
+      formatted_amount <- paste0("$", format(charge_amount, nsmall = 0, trim = TRUE))
+      paste0("<b>Fixed Charge:</b> ", formatted_amount, "/", charge_period)
+    }
+  })
+  
+  
   #### Download Non-Filtered ECR Data as CSV ####
   # Includes only one utility, customer segment, and final interconnection application year,
   # but includes all rate seasons, day-types, and ACC years.
