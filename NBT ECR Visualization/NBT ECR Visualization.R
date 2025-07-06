@@ -327,8 +327,8 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
                       Rate_Season, 
                       Day_Type,
                       ECR_Year,
-                      "Export Compensation Rate Comparison - ",
-                      Rate_Components)
+                      Rate_Components,
+                      "Cost & Credits")
   
   # Optional - abbreviations and acronyms for shorter plot titles
   Plot_Title <- gsub("Residential", "Resi", Plot_Title)
@@ -337,6 +337,9 @@ ECR_Plot <- function(ECR_Customer_Segment, Retail_Rate_Customer_Segment, Utility
   Plot_Title <- gsub("Low-Income", "LI", Plot_Title)
   Plot_Title <- gsub("New Home/Change of Party", "NH/CoP", Plot_Title)
   Plot_Title <- gsub("Export Compensation Rate", "ECR", Plot_Title)
+  Plot_Title <- gsub("All Components", "Total", Plot_Title)
+  Plot_Title <- gsub("Delivery Only", "Delivery", Plot_Title)
+  Plot_Title <- gsub("Generation Only", "Generation", Plot_Title)
   
   Plot_Filepath <- file.path(Code_WD,
                              ECR_Customer_Segment,

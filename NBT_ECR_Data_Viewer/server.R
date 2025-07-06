@@ -485,14 +485,17 @@ shinyServer(function(input, output, session) {
                         input$Rate_Season_Choose,
                         input$Day_Type_Choose,
                         input$ECR_Year_Choose,
-                        "ECR Comparison -",
-                        input$Rate_Components_Choose)
+                        input$Rate_Components_Choose,
+                        "Cost & Credits")
     
     Plot_Title <- gsub("Residential", "Resi", Plot_Title)
     Plot_Title <- gsub("No Discount ", "", Plot_Title)
     Plot_Title <- gsub("General Market", "GM", Plot_Title)
     Plot_Title <- gsub("Low-Income", "LI", Plot_Title)
     Plot_Title <- gsub("New Home/Change of Party", "NH/CoP", Plot_Title)
+    Plot_Title <- gsub("All Components", "Total", Plot_Title)
+    Plot_Title <- gsub("Delivery Only", "Delivery", Plot_Title)
+    Plot_Title <- gsub("Generation Only", "Generation", Plot_Title)
     
     ECR_Plot_Object <- ggplot(Plot_Ready_Rates(),
                               aes(group = 1,
