@@ -538,19 +538,6 @@ shinyServer(function(input, output, session) {
   })
   
   
-  #### Display ACC Plus Adder Value ####
-  output$ACC_Plus_Adder_Display <- renderText({
-    req(ACC_Plus_Adder())
-    formatted_ACC_Plus_Adder <- paste0("$", format(ACC_Plus_Adder(), nsmall = 0, trim = TRUE))
-    paste0("<b>ACC Plus Adder:</b> ", 
-          formatted_ACC_Plus_Adder, 
-          "/kWh")
-  })
-  
-  # Make the text output larger
-  outputOptions(output, "ACC_Plus_Adder_Display", suspendWhenHidden = FALSE)
-  
-  
   #### Display Fixed Charge ####
   output$Fixed_Charge_Display <- renderText({
     req(input$Utility_Name_Choose)
@@ -573,6 +560,16 @@ shinyServer(function(input, output, session) {
   })
   
   
+  #### Display ACC Plus Adder Value ####
+  output$ACC_Plus_Adder_Display <- renderText({
+    req(ACC_Plus_Adder())
+    formatted_ACC_Plus_Adder <- paste0("$", format(ACC_Plus_Adder(), nsmall = 0, trim = TRUE))
+    paste0("<b>ACC Plus Adder:</b> ", 
+          formatted_ACC_Plus_Adder, 
+          "/kWh")
+  })
+  
+
   #### Download Non-Filtered ECR Data as CSV ####
   # Includes only one utility, customer segment, and final interconnection application year,
   # but includes all rate seasons, day-types, and ACC years.

@@ -33,10 +33,10 @@ shinyUI(fluidPage(
       plotlyOutput("ECR_Plot", height = '100%', width = 'auto'),
       br(),
       div(style = "font-size: 18px;",
-          htmlOutput("ACC_Plus_Adder_Display")
+          htmlOutput("Fixed_Charge_Display")
       ),
       div(style = "font-size: 18px;",
-          htmlOutput("Fixed_Charge_Display")
+          htmlOutput("ACC_Plus_Adder_Display")
       ),
       div(style = "font-size: 18px;",
           HTML('<a href="https://github.com/RyanCMann/ACC_to_NBT_ECR" target="_blank">GitHub Repository - All Code and Data</a>')
