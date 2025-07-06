@@ -535,6 +535,18 @@ shinyServer(function(input, output, session) {
   })
   
   
+  #### Display ACC Plus Adder Value ####
+  output$ACC_Plus_Adder_Display <- renderText({
+    req(ACC_Plus_Adder())
+    paste("<b>ACC Plus Adder:</b>", 
+          scales::dollar(ACC_Plus_Adder(), accuracy = 0.001), 
+          "per kWh")
+  })
+  
+  # Make the text output larger
+  outputOptions(output, "ACC_Plus_Adder_Display", suspendWhenHidden = FALSE)
+  
+  
   #### Download Non-Filtered ECR Data as CSV ####
   # Includes only one utility, customer segment, and final interconnection application year,
   # but includes all rate seasons, day-types, and ACC years.

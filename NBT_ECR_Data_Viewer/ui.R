@@ -31,6 +31,10 @@ shinyUI(fluidPage(
     
     mainPanel(
       plotlyOutput("ECR_Plot", height = '100%', width = 'auto'),
+      br(),
+      div(style = "font-size: 18px;",
+          htmlOutput("ACC_Plus_Adder_Display")
+      )
     )
   )
 ))
