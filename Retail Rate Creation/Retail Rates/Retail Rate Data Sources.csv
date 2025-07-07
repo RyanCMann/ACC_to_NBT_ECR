@@ -1,0 +1,4 @@
+Delivery Utility,Generation Supplier,Rate Schedule,Retail Rate Data Source
+PG&E,PG&E,E-ELEC,https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-ELEC.pdf
+SCE,SCE,TOU-D-PRIME,https://www.sce.com/regulatory/regulatory-information/tariff-books/rates-pricing-choices
+SDG&E,SDG&E,EV-TOU-5,https://tariffsprd.sdge.com/sdge/tariffs/?utilId=SDGE&bookId=ELEC&sectId=ELEC-SCHEDS&tarfRateGroup=Residential%20Rates
