@@ -39,6 +39,9 @@ shinyUI(fluidPage(
           htmlOutput("ACC_Plus_Adder_Display")
       ),
       div(style = "font-size: 18px;",
+          htmlOutput("EEC_Adjustment_Rate_Display")
+      ),
+      div(style = "font-size: 18px;",
           htmlOutput("NSC_Rate_Display")
       ),
       div(style = "font-size: 18px;",

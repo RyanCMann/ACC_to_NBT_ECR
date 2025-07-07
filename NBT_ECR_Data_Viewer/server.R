@@ -569,6 +569,50 @@ shinyServer(function(input, output, session) {
           "/kWh")
   })
   
+  
+  #### Load and Display EEC Adjustment Rate ####
+  EEC_Adjustment_Rates <- reactive({
+    read.csv("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/b59c897252398a4c91c3eb963fd88a5f6f419c6a/NBT%20ECR%20Visualization/Energy%20Export%20Credit%20Adjustment%20Rate%20by%20Generation%20Supplier.csv")
+  })
+  
+  output$EEC_Adjustment_Rate_Display <- renderText({
+    req(input$Utility_Name_Choose)
+    req(input$Rate_Components_Choose)
+    
+    # Filter for selected utility (Generation Supplier)
+    eec_data <- EEC_Adjustment_Rates() %>%
+      filter(Generation.Supplier == input$Utility_Name_Choose) # TODO: After adding CCAs, Utility Name input will be split into Delivery Utility and Generation Supplier.
+    
+    if(nrow(eec_data) > 0) {
+      # Select appropriate rate based on Rate_Components parameter and create dynamic label
+      if(input$Rate_Components_Choose == "All Components"){
+        eec_rate <- eec_data$Total.Rate[1]
+        rate_label <- "<b>EEC Adjustment Total Rate:</b> "
+      } else if(input$Rate_Components_Choose == "Delivery Only"){
+        eec_rate <- eec_data$Delivery.Rate[1]
+        rate_label <- "<b>EEC Adjustment Delivery Rate:</b> "
+      } else if(input$Rate_Components_Choose == "Generation Only"){
+        eec_rate <- eec_data$Generation.Rate[1]
+        rate_label <- "<b>EEC Adjustment Generation Rate:</b> "
+      }
+      
+      # Handle Unknown values and numeric conversion
+      if(is.na(eec_rate) || eec_rate == "Unknown") {
+        formatted_EEC_Rate <- "Unknown"
+      } else {
+        # Convert to numeric and format
+        eec_rate_numeric <- as.numeric(eec_rate)
+        if(is.na(eec_rate_numeric)) {
+          formatted_EEC_Rate <- "Unknown"
+        } else {
+          formatted_EEC_Rate <- paste0("$", format(eec_rate_numeric, nsmall = 0, trim = TRUE), "/kWh")
+        }
+      }
+      
+      paste0(rate_label, formatted_EEC_Rate)
+    }
+  })
+  
 
   #### Load and Display Net Surplus Compensation Rate ####
   Net_Surplus_Compensation_Rates <- reactive({
