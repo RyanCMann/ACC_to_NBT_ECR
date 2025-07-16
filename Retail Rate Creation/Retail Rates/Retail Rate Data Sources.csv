@@ -1,4 +1,6 @@
-Delivery Utility,Generation Supplier,Rate Schedule,Retail Rate Data Source
-PG&E,PG&E,E-ELEC,https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-ELEC.pdf
-SCE,SCE,TOU-D-PRIME,https://www.sce.com/regulatory/regulatory-information/tariff-books/rates-pricing-choices
-SDG&E,SDG&E,EV-TOU-5,https://tariffsprd.sdge.com/sdge/tariffs/?utilId=SDGE&bookId=ELEC&sectId=ELEC-SCHEDS&tarfRateGroup=Residential%20Rates
+Delivery Utility,Generation Supplier,Rate Schedule,Delivery Rate Data Source,Generation Rate Data Source
+PG&E,PG&E,E-ELEC,https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-ELEC.pdf,https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-ELEC.pdf
+PG&E,Ava,E-ELEC Bright Choice,https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-ELEC.pdf,https://avaenergy.org/wp-content/uploads/2025/05/2025-March-Rate-Sheet-2025-Vintage.pdf
+PG&E,Ava,E-ELEC Renewable 100,https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-ELEC.pdf,https://avaenergy.org/wp-content/uploads/2025/05/2025-March-Rate-Sheet-2025-Vintage.pdf
+SCE,SCE,TOU-D-PRIME,https://www.sce.com/regulatory/regulatory-information/tariff-books/rates-pricing-choices,https://www.sce.com/regulatory/regulatory-information/tariff-books/rates-pricing-choices
+SDG&E,SDG&E,EV-TOU-5,https://tariffsprd.sdge.com/sdge/tariffs/?utilId=SDGE&bookId=ELEC&sectId=ELEC-SCHEDS&tarfRateGroup=Residential%20Rates,https://tariffsprd.sdge.com/sdge/tariffs/?utilId=SDGE&bookId=ELEC&sectId=ELEC-SCHEDS&tarfRateGroup=Residential%20Rates
