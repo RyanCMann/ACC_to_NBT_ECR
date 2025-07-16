@@ -312,7 +312,7 @@ shinyServer(function(input, output, session) {
     
     # Filter for the specified parameters and CONSUMPTION charges only
     Filtered_Rates <- Retail_Rate_Library() %>%
-      filter(Delivery.Utility == input$Utility_Name_Choose, # TODO: For CCAs, switch to filtering on Delivery Utility and Generation Supplier and Rate Schedule
+      filter(Generation.Supplier == input$Utility_Name_Choose, # TODO: For CCAs, switch to filtering on Delivery Utility and Generation Supplier and Rate Schedule
              Rate.Season == input$Rate_Season_Choose,
              Charge.Type == "CONSUMPTION") %>%
       # Handle day type filtering - if Day.Type is empty, it applies to all days
