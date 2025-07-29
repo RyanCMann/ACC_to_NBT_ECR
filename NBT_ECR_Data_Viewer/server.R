@@ -572,7 +572,7 @@ shinyServer(function(input, output, session) {
   
   #### Load and Display EEC Adjustment Rate ####
   EEC_Adjustment_Rates <- reactive({
-    read.csv("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/b59c897252398a4c91c3eb963fd88a5f6f419c6a/NBT%20ECR%20Visualization/Energy%20Export%20Credit%20Adjustment%20Rate%20by%20Generation%20Supplier.csv")
+    read.csv("https://raw.githubusercontent.com/RyanCMann/ACC_to_NBT_ECR/refs/heads/main/NBT%20ECR%20Visualization/Energy%20Export%20Credit%20Adjustment%20Rate%20by%20Generation%20Supplier.csv")
   })
   
   output$EEC_Adjustment_Rate_Display <- renderText({
