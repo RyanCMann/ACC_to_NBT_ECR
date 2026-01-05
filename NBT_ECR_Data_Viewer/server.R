@@ -50,7 +50,7 @@ shinyServer(function(input, output, session) {
   
   output$IX_App_Year_List <- renderUI({
     IX_App_Year_List <- seq(2023, 2026)
-    selectizeInput("IX_App_Year_Choose", "Final Interconnection Application Year:", choices = IX_App_Year_List, selected = 2025)
+    selectizeInput("IX_App_Year_Choose", "Final Interconnection Application Year:", choices = IX_App_Year_List, selected = 2026)
   })
   
   output$Rate_Season_List <- renderUI({
@@ -65,7 +65,7 @@ shinyServer(function(input, output, session) {
   
   output$ECR_Year_List <- renderUI({
     ECR_Year_List <- seq(2023, 2054)
-    selectizeInput("ECR_Year_Choose", "Export Compensation Rate Year:", choices = ECR_Year_List, selected = 2025)
+    selectizeInput("ECR_Year_Choose", "Export Compensation Rate Year:", choices = ECR_Year_List, selected = 2026)
   })
   
   output$Rate_Components_List <- renderUI({
@@ -252,20 +252,20 @@ shinyServer(function(input, output, session) {
   
   
   #### Load Retail Rates and Convert to Plot-Ready Format ####
-  # Note: only including retail rate comparison for 2025 ACC Year,
+  # Note: only including retail rate comparison for 2026 ACC Year,
   # and for the residential Export Compensation Rate customer segments
   # (including low-income segments receiving discounted retail rates).
-  # Retail rate data is still loaded for ACC Years beyond 2025,
+  # Retail rate data is still loaded for ACC Years beyond 2026,
   # because the maximum value is used to set the y-axis upper limit.
   
-  # Did not plot retail rates for post-2025 ACC years
+  # Did not plot retail rates for post-2026 ACC years
   # because future retail rate values are not available.
   # Alternative approach would be to apply a
   # 4-percent average escalation of residential retail rates
   # https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M343/K979/343979448.docx
   # (pg. 13)
-  # so that post-2025 Export Compensation Rates
-  # can be compared to estimated post-2025 retail rate values.
+  # so that post-2026 Export Compensation Rates
+  # can be compared to estimated post-2026 retail rate values.
   
   # It's worth noting that there are some customers who are classified as low-income
   # with respect to the Net Billing Tariff ACC Plus Adder,
@@ -289,8 +289,8 @@ shinyServer(function(input, output, session) {
     req(input$ECR_Year_Choose)
     req(input$ECR_Customer_Segment_Choose)
     req(input$Rate_Components_Choose)
-    # Show retail rates for 2025 and residential customer segments
-    if(input$ECR_Year_Choose == 2025 && 
+    # Show retail rates for 2026 and residential customer segments
+    if(input$ECR_Year_Choose == 2026 && 
        input$ECR_Customer_Segment_Choose %in% c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party")){
       TRUE
     }else{
