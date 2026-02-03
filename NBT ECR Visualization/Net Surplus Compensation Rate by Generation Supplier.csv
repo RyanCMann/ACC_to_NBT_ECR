@@ -1,4 +1,4 @@
 Generation Supplier,NSC Rate,NSC Rate Vintage,NSC Data Source
-PG&E,0.03116,2026-01,https://www.pge.com/assets/pge/docs/clean-energy/solar/AB920-RateTable.pdf
-SCE,0.01840,2026-01,https://www.sce.com/regulatory/regulatory-information/ferc-Standards-conduct/tariff-books/rates-pricing-choices/net-surplus-compensation
-SDG&E,0.02934,2026-01,https://www.sdge.com/residential/savings-center/solar-power-renewable-energy/net-energy-metering/billing-information/excess-generation
+PG&E,0.03025,2026-02,https://www.pge.com/assets/pge/docs/clean-energy/solar/AB920-RateTable.pdf
+SCE,0.01769,2026-02,https://www.sce.com/regulatory/regulatory-information/ferc-Standards-conduct/tariff-books/rates-pricing-choices/net-surplus-compensation
+SDG&E,0.02735,2026-02,https://www.sdge.com/residential/savings-center/solar-power-renewable-energy/net-energy-metering/billing-information/excess-generation
