@@ -128,8 +128,16 @@ shinyServer(function(input, output, session) {
     NBT_ECR_File <- paste0(NBT_ECRs_Directory, URL_Utility,
                            "%20Net%20Billing%20Tariff%20Export%20Compensation%20Rate%20-%20Simple%20Average%20DCap%20-%20", URL_Component, ".csv")
     
-    read.csv(NBT_ECR_File) %>%
-      mutate(Value = Value + ACC_Plus_Adder())
+    NBT_ECR <- read.csv(NBT_ECR_File)
+    
+    # "All Components" = Delivery + Generation + ACC Plus Adder
+    # Otherwise, only show Delivery or Generation component
+    if(input$Rate_Components_Choose == "All Components"){
+      NBT_ECR <- NBT_ECR %>%
+        mutate(Value = Value + ACC_Plus_Adder())
+    }
+    
+    NBT_ECR
     
   })
   
