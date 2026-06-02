@@ -54,7 +54,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$Rate_Season_List <- renderUI({
-    Rate_Season_List <- c("Summer", "Winter", "Spring")
+    Rate_Season_List <- c("Summer", "Winter")
     selectizeInput("Rate_Season_Choose", "Rate Season:", Rate_Season_List)
   }) 
   
@@ -150,20 +150,10 @@ shinyServer(function(input, output, session) {
     } else if(input$Utility_Name_Choose == "SCE"){
       c("Jan", "Feb", "Mar", "Apr", "May", "Oct", "Nov", "Dec")
     } else if(input$Utility_Name_Choose == "SDG&E"){
-      c("Jan", "Feb", "May", "Nov", "Dec")
+      c("Jan", "Feb", "Mar", "Apr", "May", "Nov", "Dec")
     }
   })
   
-  Spring_Months <- reactive({
-    req(input$Utility_Name_Choose)
-    if(input$Utility_Name_Choose == "PG&E"){
-      NA
-    } else if(input$Utility_Name_Choose == "SCE"){
-      NA
-    } else if(input$Utility_Name_Choose == "SDG&E"){
-      c("Mar", "Apr")
-    }
-  })
   
   Summer_Months <- reactive({
     req(input$Utility_Name_Choose)

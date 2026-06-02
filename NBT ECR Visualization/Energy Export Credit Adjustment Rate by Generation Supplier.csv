@@ -1,4 +1,4 @@
 Generation Supplier,Delivery Rate,Generation Rate,Total Rate,EEC Adjustment Rate Vintage,EEC Adjustment Rate Data Source
-PG&E,Unknown,Unknown,Unknown,2026-05,
-SCE,0.01308,0.04702,0.0601,2026-05,https://www.sce.com/regulatory/regulatory-information/ferc-Standards-conduct/tariff-books/rates-pricing-choices/eec-adjustment-pricing
-SDG&E,0.02968,0.10378,0.13346,2026-05,"https://www.sdge.com/solar/solar-billing-plan/UnderstandingYourSolarBill (see ""What is an Annual True-Up Adjustment and how is it calculated?"")"
+PG&E,Unknown,Unknown,Unknown,2026-06,
+SCE,0.01287,0.0463,0.05917,2026-06,https://www.sce.com/regulatory/regulatory-information/ferc-Standards-conduct/tariff-books/rates-pricing-choices/eec-adjustment-pricing
+SDG&E,0.02781,0.09768,0.12549,2026-06,"https://www.sdge.com/solar/solar-billing-plan/UnderstandingYourSolarBill (see ""What is an Annual True-Up Adjustment and how is it calculated?"")"
