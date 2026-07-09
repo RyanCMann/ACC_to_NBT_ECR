@@ -455,6 +455,22 @@ shinyServer(function(input, output, session) {
   })
   
   
+  #### Extend Each Rate Series to Hour_Beginning = 24 ####
+  # geom_step has nothing to step toward after the last data point (Hour_Beginning = 23),
+  # so the 23:00-24:00 interval doesn't render. Add a duplicate point at Hour_Beginning = 24
+  # using the 00:00 Rate value for each series, so the step line extends to 24:00.
+  Plot_Ready_Rates_Extended <- reactive({
+    Extension_Points <- Plot_Ready_Rates() %>%
+      group_by(Month, DayType) %>%
+      filter(Hour_Beginning == 0) %>%
+      ungroup() %>%
+      mutate(Hour_Beginning = 24)
+    
+    bind_rows(Plot_Ready_Rates(), Extension_Points) %>%
+      arrange(Month, Hour_Beginning)
+  })
+  
+  
   #### Calculate Y-Axis Upper Limit and Breaks ####
   # Round Summer values up to the nearest increment of $1.00/kWh,
   # round Winter/Spring values up up to the nearest increment of $0.10/kWh
@@ -495,7 +511,7 @@ shinyServer(function(input, output, session) {
     Plot_Title <- gsub("Delivery Only", "Delivery", Plot_Title)
     Plot_Title <- gsub("Generation Only", "Generation", Plot_Title)
     
-    ECR_Plot_Object <- ggplot(Plot_Ready_Rates(),
+    ECR_Plot_Object <- ggplot(Plot_Ready_Rates_Extended(),
                               aes(group = 1,
                                   text = paste("Hour Beginning: ", paste0(Hour_Beginning, ":00"),
                                                "<br>Rate: $", paste0(Rate, "/kWh"),
@@ -520,9 +536,9 @@ shinyServer(function(input, output, session) {
     
     # If applicable, show retail rate in black, use standard ggplot colors for ECRs.
     if(Retail_Rate_Overlay() == TRUE){
-      Manual_Plot_Colors <- c("#000000", hue_pal()(length(unique(Plot_Ready_Rates()$Month)) - 1))
+      Manual_Plot_Colors <- c("#000000", hue_pal()(length(unique(Plot_Ready_Rates_Extended()$Month)) - 1))
     }else{
-      Manual_Plot_Colors <- hue_pal()(length(unique(Plot_Ready_Rates()$Month)))
+      Manual_Plot_Colors <- hue_pal()(length(unique(Plot_Ready_Rates_Extended()$Month)))
     }
     
     ECR_Plot_Object <- ECR_Plot_Object +
