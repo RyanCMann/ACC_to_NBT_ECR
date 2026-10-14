@@ -50,7 +50,7 @@ shinyServer(function(input, output, session) {
   
   output$IX_App_Year_List <- renderUI({
     IX_App_Year_List <- seq(2023, 2028)
-    selectizeInput("IX_App_Year_Choose", "Final Interconnection Application Year:", choices = IX_App_Year_List, selected = 2026)
+    selectizeInput("IX_App_Year_Choose", "Final Interconnection Application Year:", choices = IX_App_Year_List, selected = as.numeric(format(Sys.Date(), "%Y")))
   })
   
   output$Rate_Season_List <- renderUI({
@@ -65,7 +65,7 @@ shinyServer(function(input, output, session) {
   
   output$ECR_Year_List <- renderUI({
     ECR_Year_List <- seq(2023, 2056)
-    selectizeInput("ECR_Year_Choose", "Export Compensation Rate Year:", choices = ECR_Year_List, selected = 2026)
+    selectizeInput("ECR_Year_Choose", "Export Compensation Rate Year:", choices = ECR_Year_List, selected = as.numeric(format(Sys.Date(), "%Y")))
   })
   
   output$Rate_Components_List <- renderUI({
@@ -253,20 +253,20 @@ shinyServer(function(input, output, session) {
   
   
   #### Load Retail Rates and Convert to Plot-Ready Format ####
-  # Note: only including retail rate comparison for 2026 ACC Year,
+  # Note: only including retail rate comparison for current year,
   # and for the residential Export Compensation Rate customer segments
   # (including low-income segments receiving discounted retail rates).
-  # Retail rate data is still loaded for ACC Years beyond 2026,
+  # Retail rate data is still loaded for ACC Years beyond current year,
   # because the maximum value is used to set the y-axis upper limit.
   
-  # Did not plot retail rates for post-2026 ACC years
+  # Did not plot retail rates for future years
   # because future retail rate values are not available.
   # Alternative approach would be to apply a
   # 4-percent average escalation of residential retail rates
   # https://docs.cpuc.ca.gov/PublishedDocs/Published/G000/M343/K979/343979448.docx
   # (pg. 13)
-  # so that post-2026 Export Compensation Rates
-  # can be compared to estimated post-2026 retail rate values.
+  # so that future Export Compensation Rates
+  # can be compared to estimated future retail rate values.
   
   # It's worth noting that there are some customers who are classified as low-income
   # with respect to the Net Billing Tariff ACC Plus Adder,
