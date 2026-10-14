@@ -64,7 +64,7 @@ shinyServer(function(input, output, session) {
   }) 
   
   output$ECR_Year_List <- renderUI({
-    ECR_Year_List <- seq(2023, 2056)
+    ECR_Year_List <- seq(2023, 2055)
     selectizeInput("ECR_Year_Choose", "Export Compensation Rate Year:", choices = ECR_Year_List, selected = as.numeric(format(Sys.Date(), "%Y")))
   })
   

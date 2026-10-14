@@ -174,7 +174,7 @@ for(Utility_Name_Iter in Utility_Names){
                                 as.POSIXct("2018-12-31 23:00", tz = "Etc/GMT+8"),
                                 by = "1 hour")
   
-  ACC_Years <- seq(2026, 2056)
+  ACC_Years <- seq(2026, 2055)
   
   
   # ACC components assigned to Delivery include:
@@ -214,12 +214,13 @@ for(Utility_Name_Iter in Utility_Names){
   for(ACC_Filename in ACC_Filenames){
     
     ACC_File_Raw <- read.csv(file.path(ACC_Filepath, ACC_Filename), skip = 1, nrows = 8760) %>%
-      rename(Date_Time = X, X2056 = X.1)
+      rename(Date_Time = X) %>%
+      select(-X.1)
     
     # Convert ACC files from "wide" (each column is an ACC Year) to "long".
     # ACC timestamps are in Pacific Standard Time (no Daylight Savings Time).
     ACC_File_Clean <- ACC_File_Raw %>%
-      pivot_longer(X2026:X2056, names_to = "ACC_Year", names_prefix = "X",
+      pivot_longer(X2026:X2055, names_to = "ACC_Year", names_prefix = "X",
                    values_to = "Avoided_Cost") %>%
       mutate(Date_Time = as.POSIXct(Date_Time, format = "%m/%d/%Y %H:%M", tz = "Etc/GMT+8")) %>% 
       mutate(ACC_Year = as.numeric(ACC_Year)) %>%
