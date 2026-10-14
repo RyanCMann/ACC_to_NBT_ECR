@@ -49,7 +49,7 @@ shinyServer(function(input, output, session) {
   }) 
   
   output$IX_App_Year_List <- renderUI({
-    IX_App_Year_List <- seq(2023, 2026)
+    IX_App_Year_List <- seq(2023, 2028)
     selectizeInput("IX_App_Year_Choose", "Final Interconnection Application Year:", choices = IX_App_Year_List, selected = 2026)
   })
   
@@ -64,7 +64,7 @@ shinyServer(function(input, output, session) {
   }) 
   
   output$ECR_Year_List <- renderUI({
-    ECR_Year_List <- seq(2023, 2054)
+    ECR_Year_List <- seq(2023, 2056)
     selectizeInput("ECR_Year_Choose", "Export Compensation Rate Year:", choices = ECR_Year_List, selected = 2026)
   })
   
@@ -109,7 +109,10 @@ shinyServer(function(input, output, session) {
       ACC_Vintage <- 2022
     }else if(input$IX_App_Year_Choose %in% c(2025, 2026)){
       ACC_Vintage <- 2024
+    }else if(input$IX_App_Year_Choose %in% c(2027, 2028)){
+      ACC_Vintage <- 2026
     }
+    
     
     # Map Rate_Components to URL component
     if(input$Rate_Components_Choose == "All Components"){
@@ -287,8 +290,8 @@ shinyServer(function(input, output, session) {
     req(input$ECR_Year_Choose)
     req(input$ECR_Customer_Segment_Choose)
     req(input$Rate_Components_Choose)
-    # Show retail rates for 2026 and residential customer segments
-    if(input$ECR_Year_Choose == 2026 && 
+    # Show retail rates for current year and residential customer segments
+    if(input$ECR_Year_Choose == as.numeric(format(Sys.Date(), "%Y")) && 
        input$ECR_Customer_Segment_Choose %in% c("Residential General Market", "Residential Low-Income", "Residential New Home/Change of Party")){
       TRUE
     }else{
